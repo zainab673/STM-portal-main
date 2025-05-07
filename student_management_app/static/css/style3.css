@@ -1,0 +1,93 @@
+
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fa;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+h1 span {
+    color: #007bff;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+}
+
+table td {
+    background-color: #f9f9f9;
+}
+
+table td a {
+    color:white;
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+table td a:hover {
+    text-decoration: none;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #e9f5ff;
+}
+
+/* Styling for no data */
+.no-data {
+    text-align: center;
+    color: #888;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+/* Button Styling */
+a {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin: 10px 0;
+    display: inline-block;
+    text-align: center;
+}
+
+a:hover {
+    background-color: #0056b3;
+}

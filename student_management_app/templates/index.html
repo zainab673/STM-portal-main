@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Sphere</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50; /* Green for success */
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .notification.error {
+            background-color: #f44336; /* Red for error */
+        }
+        .notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <nav id="navbar">
+            <div id="logo">
+                <img src="/static/images/FYP Logo.png/" alt="Student Sphere Logo">
+            </div>
+            <ul>
+                <li class="items"><a href="#section-1">HOME</a></li>
+                <li class="items"><a href="#section-2">ABOUT US</a></li>
+                <li class="items"><a href="#section-3">CONTACT US</a></li>
+                <li class="items"><a href="#section-1">LOGIN/SIGNUP</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="section-1" style="background-image: url(/static/images/bg_image.png);">
+        <h1><b>Welcome to Student Sphere</b></h1><br>
+        <h2>Select your role to login</h2><br><br>
+        <div id="home-buttons" class="Login-button">
+            <div>
+                <img src="/static/images/Admin btn.jpg/" class="image"><br>
+                <p>As an Admin, you have full access to manage<br> the entire portal. You can add students, assign<br> courses, manage staff.</p><br>
+                <a href="/login?role=Admin" class="btn">Admin Login</a>
+            </div>
+            <div>
+                <img src="/static/images/Teacher btn.jpg/" class="image"><br>
+                <p>As a Teacher, you can manage your courses, take <br>attendance, and access chatbot or students<br> assignments.</p><br>
+                <a href="/login?role=Teacher" class="btn">Teacher Login</a>
+            </div>
+            <div>
+                <img src="/static/images/Student btn.png/" class="image"><br>
+                <p>As a Student, you can view your courses, track <br>your attendance, access chatbot, and check Google <br>Classroom links for assignments</p><br>
+                <a href="/login?role=Student" class="btn">Student Login</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-2" style="background-image: url(/static/images/Bg_2.png);">
+        <div class="sec2items">
+            <div>
+                <h1 class="sec2text">About Us</h1>
+                <p> Student Sphere is an innovative Student Management Portal<br> designed to streamline academic management for students<br> teachers, and administrators.</p><br><br>
+                <h3 class="sec2h3">Our Mission</h3><br>
+                <p>We aim to create an efficient, user-friendly platform where <br> students, teachers, and admins can seamlessly interact.</p>
+            </div>
+            <div>
+                <h3 class="sec2text">Why Student Sphere?</h3>
+                <p>We believe in simplifying student management with a clean <br>and responsive interface.</p><br><br>
+                <h3 class="sec2h3">Key Features</h3><br>
+                <ul>
+                    <li>Student Dashboard – View courses, attendance.</li>
+                    <li>Teacher Dashboard – Manage assigned courses.</li>
+                    <li>Admin Panel – Handle student & staff data.</li>
+                    <li>Google Classroom Integration.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-3" style=" background-image: url(/static/images/Bg_3.png);">
+        <div id="sec3text">
+            <h1 id="sec3h1">Contact Us</h1>
+            <p id="sec3p">
+                Have any questions? Feel free to reach out to us.
+            </p>
+        </div>
+        <div class="section3items">
+            <form class="contact-form" method="post" action="/submit_contact_form/">
+                {% csrf_token %}
+                <label for="name"> Name</label><br>
+                <input type="text" id="name" name="name" placeholder="" required><br><br>
+
+                <label for="email"> Email</label><br>
+                <input type="email" id="email" name="email" placeholder="" required><br><br>
+
+                <label for="message"> Message</label><br>
+                <textarea id="message" name="message" placeholder="" required></textarea><br><br>
+
+                <button type="submit" id="submitBtn">Send Message</button>
+            </form>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="icon">📍</div>
+                    <p><strong>Address</strong><br> Lahore College for Women University, Jail Road, Lahore-Pakistan</p>
+                </div>
+                <div class="contact-item">
+                    <div class="icon">📧</div>
+                    <p><strong>Email</strong> <br>support@scholarsphere.com</p>
+                </div>
+                <div class="contact-item">
+                    <div class="icon">📞</div>
+                    <p><strong>Phone</strong><br> +123 456 7890</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.contact-form');
+            const notificationDiv = document.getElementById('notification');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => {
+                    return response.text(); // Get the response text ('success' or 'error')
+                })
+                .then(data => {
+                    if (data === 'success') {
+                        notificationDiv.textContent = 'Message sent successfully!';
+                        notificationDiv.className = 'notification show';
+                        setTimeout(() => {
+                            window.location.href = '/'; // Redirect after notification
+                        }, 3000);
+                    } else if (data === 'error') {
+                        notificationDiv.textContent = 'Please fill in all the fields.';
+                        notificationDiv.className = 'notification error show';
+                        setTimeout(() => {
+                            notificationDiv.className = 'notification error'; // Remove 'show' class
+                            notificationDiv.textContent = '';
+                        }, 3000);
+                    } else {
+                        // Handle unexpected response
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                    notificationDiv.textContent = 'Message not sent. Please try again.';
+                    notificationDiv.className = 'notification error show';
+                    setTimeout(() => {
+                        notificationDiv.className = 'notification error'; // Remove 'show' class
+                        notificationDiv.textContent = '';
+                    }, 3000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

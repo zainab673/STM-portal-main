@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+   body {
+      margin: 0;
+      padding: 0;
+      height: 90vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: url('/static/images/Bg_3.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .signup-form {
+    justify-content: center;
+    background:#003366;
+    padding: 40px;
+    border-radius: 10px;
+    width: 400px;
+    color: white;
+    text-decoration: none;
+    font-size: larger;
+}
+.signup-form button {
+    background: white;
+    color:#003366;
+    border: none;
+    padding: 6px;
+    font-size: large;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 370px;
+}
+#username,#email,#password,#verification_code,#semester{
+    border-radius: 5px;
+    padding: 6px;
+    width: 250px;
+} 
+</style>
+</head>
+<body>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="message {% if 'error' in message.tags %}error{% else %}success{% endif %}" 
+             {% if 'success' in message.tags %}id="success-message"{% endif %}>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+
+    <div id="signup-container" >
+        <form class="signup-form" method="POST">
+            {% csrf_token %}
+            <h1>Sign Up</h1>
+            <p>Create your account in seconds</p><br>
+
+            <input type="hidden" name="role" value="{{ role }}">  
+
+            <label for="username">Username</label><br>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required><br><br>
+
+            <label for="email">Email</label><br>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required><br><br>
+
+            <label for="password">Password</label><br>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required><br><br>
+
+            <label for="verification_code">Verification Code</label><br>
+            <input type="text" id="verification_code" name="verification_code" placeholder="Enter your verification code" required><br><br>
+            {% if role == 'student' %}
+            <label for="semester">Select Semester:</label><br>
+            <select name="semester" id="semester">
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3">Semester 3</option>
+              <option value="4">Semester 4</option>
+            </select><br>
+          {% endif %}
+          
+            <button type="submit">Create an account</button><br><br>
+
+            <p>Already a member? <a href="{% url 'login' %}">Login</a></p> 
+        </form>
+    </div>
+ 
+</body>
+<script>
+  const successMessage = document.getElementById('success-message');
+
+  // Message fade-out after 3 seconds
+  const allMessages = document.querySelectorAll('.message');
+  allMessages.forEach(message => {
+      setTimeout(() => {
+          message.style.opacity = '0';
+          message.style.top = '0px';
+          setTimeout(() => {
+              message.remove();
+          }, 500); // Wait for fade-out transition
+      }, 3000);
+  });
+
+  // Redirect after 3 seconds if success
+  if (successMessage) {
+      setTimeout(function () {
+          const role = "{{ role }}";
+          if (role === 'student') {
+              window.location.href = "{% url 'student_panel' %}";
+          } else if (role === 'teacher') {
+              window.location.href = "{% url 'teacher_panel' %}";
+          } else if (role === 'admin') {
+              window.location.href = "{% url 'admin_panel' %}";
+          }
+      }, 3000);
+  }
+ </script>
+
+</html> 

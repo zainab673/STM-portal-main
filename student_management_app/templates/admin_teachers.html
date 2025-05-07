@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachers</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap">
+    <link rel="stylesheet" href="/static/css/style4.css">
+    <script>
+        function confirmDelete(event, deleteUrl) {
+            if (confirm("Are you sure you want to delete this teacher?")) {
+                window.location.href = deleteUrl; // Redirect to the delete URL if confirmed
+            } else {
+                event.preventDefault(); // Prevent default link action if not confirmed (though not strictly needed here as the user stays on the page)
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="side-menu">
+        <br><br>
+        <div class="fyp-name">
+            <h2>Student Sphere</h2>
+        </div>
+        <ul>
+            <li><a href="{% url 'admin_panel' %}">Dashboard</a></li>
+            <li>Students</li>
+            <li><a href="{% url 'teacher_list' %}">Teachers</a></li>
+            <li><a href="selectsem.html">Attendance</a></li>
+            <li class="dropdown">
+                <a href="#">Timetable</a>
+                <ul class="submenu">
+                    <li><a href="/timetable/1/">Semester 1</a></li>
+                    <li><a href="/timetable/2/">Semester 2</a></li>
+                    <li><a href="/timetable/3/">Semester  3</a></li>
+                    <li><a href="/timetable/4/">Semester 4</a></li>
+                    <li><a href="/timetable/5/">Semester 5</a></li>
+                    <li><a href="/timetable/6/">Semester 6</a></li>
+                    <li><a href="/timetable/7/">Semester 7</a></li>
+                    <li><a href="/timetable/8/">Semester 8</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="nav">
+                <div class="search">
+                    <form method="GET" action="{% url 'teacher_list' %}">
+                        <input type="text" name="search" placeholder="Search.." value="{% if search_term %}{{ search_term }}{% endif %}">
+                        <button type="submit"><img src="/static/images/search.png/" alt=""></button>
+                    </form>
+                </div>
+                <div class="user">
+
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <h1>Teachers</h1>
+             <div class="sorting-options">
+                 <form method="GET" action="{% url 'teacher_list' %}">
+                     <label for="sort">Sort by:</label>
+                     <select name="sort" id="sort">
+                         <option value="username" {% if sort_by == 'username' %}selected{% endif %}>Username</option>
+                         <option value="email" {% if sort_by == 'email' %}selected{% endif %}>Email</option>
+                         <option value="cnic" {% if sort_by == 'cnic' %}selected{% endif %}>CNIC</option>
+                         <option value="department" {% if sort_by == 'department' %}selected{% endif %}>Department</option>
+                     </select>
+                     <input type="hidden" name="search" value="{{ search_term }}">
+                     <button type="submit">Filter</button>
+                 </form>
+             </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th><a href="{% url 'teacher_list' %}?sort=username{% if search_term %}&search={{ search_term }}{% endif %}">Username</a></th>
+                        <th><a href="{% url 'teacher_list' %}?sort=email{% if search_term %}&search={{ search_term }}{% endif %}">Email</a></th>
+                        <th>CNIC</th>
+                        <th>Subject Taught</th>
+                        <th><a href="{% url 'teacher_list' %}?sort=department{% if search_term %}&search={{ search_term }}{% endif %}">Department</a></th>
+                        <th>Contact Number</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in page_obj %}
+                    <tr>
+                        <td>{{ teacher.user.username }}</td>
+                        <td>{{ teacher.user.email }}</td>
+                        <td>{{ teacher.cnic }}</td>
+                        <td>{{ teacher.subject_taught|default:"-" }}</td>
+                        <td>{{ teacher.department|default:"-" }}</td>
+                        <td>{{ teacher.contact_number|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'teacher_edit' teacher.pk %}">Edit</a> |
+                            <a href="{% url 'teacher_delete' teacher.pk %}" onclick="confirmDelete(event, '{% url 'teacher_delete' teacher.pk %}')">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">No teachers found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_term %}&search={{ search_term }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_term %}&search={{ search_term }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Previous</a>
+                    {% else %}
+                        <span class="disabled">&laquo; First</span>
+                        <span class="disabled">Previous</span>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_term %}&search={{ search_term }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_term %}&search={{ search_term }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Last &raquo;</a>
+                    {% else %}
+                        <span class="disabled">Next</span>
+                        <span class="disabled">Last &raquo;</span>
+                    {% endif %}
+                </span>
+            </div>
+             {% if messages %}
+                 <div class="message">
+                     {% for message in messages %}
+                         {{ message }}
+                     {% endfor %}
+                 </div>
+             {% endif %}
+        </div>
+    </div>
+</body>
+</html>

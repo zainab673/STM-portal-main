@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Sphere</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <div id="login-container" style="background-image: url(/static/images/Bg_3.png);">
+        
+        <!-- Login Form -->
+        <form class="login-form" method="POST">
+            {% csrf_token %}
+            <h1>Login</h1>
+            <p>Please enter your login details to sign in</p><br>
+
+            <label for="username">Username</label><br>
+            <input type="text" name="username" id="username" placeholder="Enter your username" required><br><br>
+
+            <label for="password">Password</label><br>
+            <input type="password" name="password" id="password" placeholder="Enter your password" required><br><br>
+            <p><a href="#">Forgot Password?</a></p><br>
+
+            <button type="submit">Login</button><br><br>
+
+            <p>Don't have an account? 
+                <a href="{% url 'index' %}?role=student">Signup as Student</a> |
+                <a href="{% url 'index' %}?role=teacher">Signup as Teacher</a> |
+                <a href="{% url 'index' %}?role=admin">Signup as Admin</a>
+            </p>
+
+            <input type="hidden" name="role" value="{{ role }}">
+        </form>
+    </div>
+
+</body>
+</html> 

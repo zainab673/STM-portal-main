@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style1.css">
+    <title>Teacher Dashboard</title>
+</head>
+
+<body>
+    <div class="side-menu">
+        <div class="fyp-name">
+            <h2>Student Sphere</h2>
+        </div>
+        <ul>
+            <li>Dashboard</li>
+            <li>My Courses </li>
+            <li><a href="/selectsem/">Take Attendance</a></li>
+            <li><a href="https://classroom.google.com/">Google Classroom</a></li>
+            <li class="dropdown">Timetable
+                <ul class="submenu">
+                    <li><a href="#">Semester 1</a></li>
+                    <li><a href="#">Semester 2</a></li>
+                    <li><a href="#">Semester 3</a></li>
+                    <li><a href="#">Semester 4</a></li>
+                    <li><a href="#">Semester 5</a></li>
+                    <li><a href="#">Semester 6</a></li>
+                    <li><a href="#">Semester 7</a></li>
+                    <li><a href="#">Semester 8</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="nav">
+                <div class="search">
+                    <input type="text" placeholder="Search..">
+                    <button type="submit"><img src="/static/images/search.png/" alt=""></button>
+                </div>
+                <div class="user">
+                    <img src="/static/images/notifications.png/" alt="">
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h1> Welcome to the Teacher Dashboard </h1>
+            <div class="cards">
+                <div class="card">
+                    <div class="box">
+                        <h2>My Courses</h2>
+                    </div>
+                    <div class="icon-case">
+                        <img src="/static/images/Students.png/" alt="">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="box">
+                        <h2>Google Classroom</h2>
+                    </div>
+                    <div class="icon-case">
+                        <img src="/static/images/Teachers.png/" alt="">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="box">
+                        <h2>Timetable</h2>
+                    </div>
+                    <div class="icon-case">
+                        <img src="/static/images/Timetable.png/" alt="">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="box">
+                        <h2>Attendance</h2>
+                    </div>
+                    <div class="icon-case">
+                        <img src="/static/images/Attendance.png/" alt="">
+                    </div>
+                </div>
+            </div>
+</body>
+</html>   
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    let dropdown = document.querySelector(".dropdown");
+    let submenu = document.querySelector(".submenu");
+
+    dropdown.addEventListener("click", function (event) {
+        event.stopPropagation();
+        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", function () {
+        submenu.style.display = "none";
+    });
+});
+
+</script>
+
+       

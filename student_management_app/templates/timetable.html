@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable for Semester {{ semester }}</title>
+    <link rel="stylesheet" href="/static/css/style3.css"> 
+</head>
+<body>
+    <div class="container">
+        <h1>Timetable for Semester {{ semester }}</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sr. No</th>
+                    <th>Day</th> 
+                    <th>Subject</th>
+                    <th>Instructor</th>
+                    <th>Timing</th>
+                    <th>Classroom</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in timetable %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.day }}</td> 
+                        <td>{{ item.subject }}</td>
+                        <td>{{ item.instructor }}</td>
+                        <td>{{ item.timing }}</td>
+                        <td>{{ item.classroom }}</td>
+                        <td>
+                            <a href="/edit/{{ item.id }}/">Edit</a> |
+                            <a href="/delete/{{ item.id }}/">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">No timetable data available for this semester.</td> <!-- updated colspan to 7 -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

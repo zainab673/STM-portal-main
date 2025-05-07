@@ -1,0 +1,251 @@
+
+/* CSS RESET */
+*{
+    padding: 0px;
+    margin: 0px;
+}
+/* Navigation bar */
+#navbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f0f0f0e0;
+    height: 100px;
+    box-shadow: 0px 2px #003366;
+    position: sticky;
+    }
+/*  logo and image */
+#logo img{
+    height: 200px;
+    margin: 20px 0px 0px 20px;
+}
+/* List Styling */
+#navbar ul{
+    display: flex;
+}
+#navbar ul li a
+{
+    color: #003366 !important;
+    list-style: none;
+    margin: 3px 10px;
+    padding: 10px;
+    text-decoration: none !important;
+}
+#navbar ul li a:hover{
+    cursor: pointer;
+    color: #003366;
+}
+/* Section 1 */
+#section-1{
+    background-size: cover; 
+    height: 550px;
+}
+#section-1 h1,h2{
+    text-align: center;
+    padding-left: 50px;
+    color:#003366;
+}
+#section-1 h1{
+    padding-top: 80px;
+    font-size: 50px;
+}
+/* Section 1 Buttons */
+.Login-button{
+    justify-items: center;
+    justify-content: space-evenly;
+    display: flex;
+    flex-direction: row;
+}
+.btn{
+    border: 2px solid #003366;
+    border-radius: 25px;
+    background-color: #003366;
+    padding: 5px 20px;  
+    color:white;  
+    font-size: large;
+    text-decoration: none;
+}
+/* SECTION 1 IMAGES */
+.image{
+    height:200px;
+    width: 300px;
+}
+/* Section -2 */
+#section-2{
+    background-size: cover; 
+    height: 550px;
+}
+/* Section 2 Text */
+.sec2text
+{
+    margin-top:80px;
+    color: white;
+    font-size: 50px;
+}
+.sec2h3{
+    color:#fff;
+    font-size: 30px;
+}
+#section-2 p,ul{
+    color: white;
+    font-size: larger;
+}
+/* SECTION 2 ITEMS  */
+.sec2items{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+/* Section -3 */
+#section-3{
+    padding-top: 30px;
+    background-size: cover; 
+    height: 550px;
+}
+/* SECTION 3 Items */
+.section3items{
+    margin-top: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+/* SECTION 3 TEXT */
+#sec3text{
+    margin-top: 50px;
+}
+#sec3h1{
+    color:#003366;
+    font-size: 50px;
+    text-align: center;
+}
+#sec3p{
+    color:#003366;
+    font-size: larger;
+    text-align: center;
+}
+
+/* SECTION 3 FORM */
+.contact-form {
+    background:#003366;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    color: white;
+    font-size: larger;
+}
+.contact-info{
+    color: #003366;
+    font-size: larger;
+}
+.contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.contact-item .icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #000428, #004e92);
+    margin-right: 10px;
+} 
+#name,#email,#password{
+    border-radius: 5px;
+    padding: 6px;
+    width: 250px;
+}
+.contact-form button {
+    background: white;
+    color: #003366;
+    border: none;
+    padding: 10px;
+    font-size: large;
+    cursor: pointer;
+    border-radius: 5px;
+}
+/* SIGUNP FORM */
+#signup-container{
+    background-size: cover; 
+    height: 650px;
+    justify-items: center;
+} 
+.signup-form {
+    justify-content: center;
+    background:#003366;
+    padding: 40px;
+    border-radius: 10px;
+    width: 400px;
+    color: white;
+    text-decoration: none;
+    font-size: larger;
+}
+/* Center the signup form container */
+.signup-form button {
+    background: white;
+    color:#003366;
+    border: none;
+    padding: 6px;
+    font-size: large;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 370px;
+}
+#username,#email,#password,#verification_code{
+    border-radius: 5px;
+    padding: 6px;
+    width: 250px;
+}
+
+/* Login FORM */
+#login-container{
+    background-size: cover; 
+    height: 650px;
+    justify-items: center;
+} 
+.login-form {
+    justify-content: center;
+    background:#003366;
+    padding: 40px;
+    border-radius: 10px;
+    width: 400px;
+    color: white;
+    font-size: larger;
+}
+.login-form button {
+    background: white;
+    color:#003366;
+    border: none;
+    padding: 6px;
+    font-size: large;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 370px;
+}
+.login-form a, .signup-form a {
+    color: white; 
+    text-decoration: none; 
+}
+.login-form a:hover, .signup-form a:hover {
+    color: lightgray;
+}
+/* Success/Error message styles */
+
+.message.success {
+    color: green;
+    border: 1px solid green;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #d4edda;
+}
+
+.message.error {
+    color: red;
+    border: 1px solid red;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #f8d7da;
+}

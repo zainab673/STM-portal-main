@@ -1,0 +1,88 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Select Semester & Subject</title>
+      <link rel="stylesheet" href="/static/css/style2.css">
+  </head>
+  <body style="background-image: url(/static/images/bg_image.png);">
+      <div class="container">
+          <h1>Select Semester</h1>
+          <form action="/open_attendance/" method="post">
+              {% csrf_token %}
+              <select id="semesterSelect" name="semester" onchange="loadSubjects()">
+                  <option value="">-- Choose Semester --</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Semester 3</option>
+              </select>
+  
+              <h1>Select Subject</h1>
+              <select id="subjectSelect" name="subject" disabled>
+                  <option value="">-- Select Semester First --</option>
+              </select>
+  
+              <button id="continueBtn" disabled>Continue</button>
+  
+              <!-- Hidden Form for Download Button -->
+              <div id="downloadSection" style="display: none; color:white;">
+                  <h3>File Ready to Download</h3>
+                  <form action="/open_attendance/" method="post">
+                      {% csrf_token %}
+                      <input type="hidden" name="semester" id="semesterHidden">
+                      <input type="hidden" name="subject" id="subjectHidden">
+                      <button name="download" type="submit">Download File</button>
+                  </form>
+              </div>
+          </form>
+      </div>
+  
+      <script>
+          function loadSubjects() {
+              let semester = document.getElementById("semesterSelect").value;
+              let subjectSelect = document.getElementById("subjectSelect");
+              let continueBtn = document.getElementById("continueBtn");
+              let downloadSection = document.getElementById("downloadSection");
+              let semesterHidden = document.getElementById("semesterHidden");
+              let subjectHidden = document.getElementById("subjectHidden");
+  
+              subjectSelect.innerHTML = ""; 
+              subjectSelect.disabled = true;
+              continueBtn.disabled = true;
+              downloadSection.style.display = "none"; 
+  
+              if (semester) {
+                  let subjects = {
+                      "1": ["Math", "Physics", "Chemistry"],
+                      "2": ["Programming", "Data Structures", "Algorithms"],
+                      "3": ["Database", "Operating Systems", "Networking"]
+                  };
+  
+                  subjects[semester].forEach(subject => {
+                      let option = document.createElement("option");
+                      option.value = subject;
+                      option.textContent = subject;
+                      subjectSelect.appendChild(option);
+                  });
+  
+                  subjectSelect.disabled = false;
+              }
+  
+              // Enable continue button once a subject is selected
+              document.getElementById("subjectSelect").addEventListener("change", function() {
+                  continueBtn.disabled = !this.value;
+                  if (this.value) {
+                      // Show the download section after a subject is selected
+                      semesterHidden.value = semester;
+                      subjectHidden.value = this.value;
+                      downloadSection.style.display = "block"; 
+                  }
+              });
+          }
+      </script>
+  
+  </body>
+  </html>
+  
