@@ -1,273 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/style1.css">
-    <title>Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/style1.css">
+  <title>Admin Dashboard</title>
 </head>
 <body>
-    <div class="side-menu">
-        <br><br>
-        <div class="fyp-name">
-            <h2>Student Sphere</h2>
-        </div>
-        <ul>
-            <li>Dashboard</li>
-            <li>Students</li>
-            <li><a href="{% url 'teacher_list' %}">Teachers</a></li>   
-            <li><a href="selectsem.html">Attendance</a></li>
-            <li class="dropdown">
-                <a href="#">Timetable</a>
-                <ul class="submenu">
-                    <li><a href="/timetable/1/">Semester 1</a></li>
-                    <li><a href="/timetable/2/">Semester 2</a></li>
-                    <li><a href="/timetable/3/">Semester  3</a></li>
-                    <li><a href="/timetable/4/">Semester 4</a></li>
-                    <li><a href="/timetable/5/">Semester 5</a></li>
-                    <li><a href="/timetable/6/">Semester 6</a></li>
-                    <li><a href="/timetable/7/">Semester 7</a></li>
-                    <li><a href="/timetable/8/">Semester 8</a></li>
-                </ul>
-            </li>
-        </ul>
+  <div class="side-menu">
+    <br><br>
+    <div class="fyp-name">
+      <h2>Student Sphere</h2>
     </div>
-    <div class="container">
-        <div class="header">
-            <div class="nav">
-                <div class="search">
-                    <input type="text" placeholder="Search..">
-                    <button type="submit"><img src="/static/images/search.png/" alt=""></button>
-                </div>
-                <div class="user" id="notifications-container">
-                    <div style="position: relative;">
-                        <img src="/static/images/notifications.png/" alt="" id="notifications-icon" style="cursor: pointer;">
-                        {% if unread_messages_count > 0 %}
-                            <span id="notification-badge" style="position: absolute; top: -5px; right: -5px; background-color: red; color: white; border-radius: 50%; padding: 5px 8px; font-size: 0.8em;">{{ unread_messages_count }}</span>
-                        {% endif %}
+    <ul>
+      <li>Dashboard</li>
+      <li><a href="{% url 'student_list' %}">Students</a></li>
+      <li><a href="{% url 'teacher_list' %}">Teachers</a></li>
+      <li><a href="/selectsem/">Attendance</a></li>
+      <li class="dropdown">
+        <a href="{% url 'admin_timetable' %}">Timetable</a>
+      </li>
+      <li class="dropdown">
+      <a href="{% url 'admin_courses' %}">Manage Courses</a></li>
+    </ul>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="nav">
+        <div class="search"></div>
+        <div class="user" id="notifications-container">
+          <div style="position: relative;">
+            <img src="/static/images/notifications.png/" alt="" id="notifications-icon" style="cursor: pointer;">
+            {% if unread_messages_count > 0 %}
+              <span id="notification-badge">{{ unread_messages_count }}</span>
+            {% endif %}
+          </div>
+          <div id="notifications-dropdown">
+            {% if unread_messages %}
+              <h3>New Messages:</h3>
+              <ul>
+                {% for message in unread_messages %}
+                  <li class="unread-message-item">
+                    <div>
+                      <strong>{{ message.name }}</strong>
+                      <span>({{ message.email }})</span><br>
+                      <p class="short-message">{{ message.message|truncatechars:80 }} <a href="#" class="read-more-link" data-message-id="{{ message.id }}">Read More</a></p>
+                      <p class="full-message" style="display: none;">{{ message.message }} <a href="#" class="read-less-link" data-message-id="{{ message.id }}">Read Less</a></p>
                     </div>
-                    <div id="notifications-dropdown" style="position: absolute; top: 50px; right: 0; background-color: white; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; display: none; min-width: 350px; padding: 10px;">
-                        {% if unread_messages %}
-                            <h3 style="color: #333; margin-bottom: 10px;">New Messages:</h3>
-                            <ul style="list-style: none; padding: 0;">
-                                {% for message in unread_messages %}
-                                <li class="unread-message-item" style="padding: 10px; border-bottom: 1px solid #eee; color: #333; display: flex; align-items: flex-start; justify-content: space-between;">
-                                    <div style="flex-grow: 1;">
-                                        <strong style="color: #000; font-weight: bold; font-size: 1.1em; display: block; margin-bottom: 3px;">{{ message.name }}</strong>
-                                        <span style="color: #555; font-size: 0.9em;">({{ message.email }})</span><br>
-                                        <p class="short-message" style="color: #444; margin-top: 5px;">{{ message.message|truncatechars:80 }} <a href="#" class="read-more-link" data-message-id="{{ message.id }}" style="color: blue; text-decoration: none;">Read More</a></p>
-                                        <p class="full-message" style="color: #444; margin-top: 5px; display: none;">{{ message.message }} <a href="#" class="read-less-link" data-message-id="{{ message.id }}" style="color: blue; text-decoration: none;">Read Less</a></p>
-                                    </div>
-                                    <form method="post" action="{% url 'delete_message' message.id %}" style="margin-left: 10px;">
-                                        {% csrf_token %}
-                                        <button type="submit" style="background: none; border: none; color: red; cursor: pointer; font-size: 1em;">Delete</button>
-                                    </form>
-                                </li>
-                                {% empty %}
-                                    <li style="padding: 10px; color: #777;">No new messages.</li>
-                                {% endfor %}
-                            </ul>
-                            <a href="#" style="display: block; text-align: center; padding-top: 15px; color: blue; text-decoration: none; border-top: 1px solid #eee; margin-top: 10px;">View All Messages</a>
-                        {% else %}
-                            <p style="color: #333;">No new messages.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+                    <form method="post" action="{% url 'delete_message' message.id %}">
+                      {% csrf_token %}
+                      <button type="submit">Delete</button>
+                    </form>
+                  </li>
+                {% empty %}
+                  <li>No new messages.</li>
+                {% endfor %}
+              </ul>
+              <a href="#">View All Messages</a>
+            {% else %}
+              <p>No new messages.</p>
+            {% endif %}
+          </div>
         </div>
-
-        <div class="content">
-            <h1> Welcome to the Admin Dashboard </h1>
-
-            <div id="chatbot-container">
-                <div id="chatbot-box">
-                    <div id="chatbot-messages">
-                    </div>
-                    <input type="text" id="userMessage" placeholder="Ask Anything..." onkeydown="handleKeyPress(event)" />
-                </div>
-            </div>
-
-
-            <div class="cards">
-                <div class="card">
-                    <div class="box">
-                        <h2>Students</h2>
-                    </div>
-                    <div class="icon-case">
-                        <img src="/static/images/Students.png/" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h2>Teacher</h2>
-                    </div>
-                    <div class="icon-case">
-                        <img src="/static/images/Teachers.png/" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h2>Timetable</h2>
-                    </div>
-                    <div class="icon-case">
-                        <img src="/static/images/Timetable.png/" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h2>Attendance</h2>
-                    </div>
-                    <div class="icon-case">
-                        <img src="/static/images/Attendance.png/" alt="">
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let dropdown = document.querySelector(".dropdown");
-            let submenu = document.querySelector(".submenu");
-            let notificationsIcon = document.getElementById('notifications-icon');
-            let notificationsDropdown = document.getElementById('notifications-dropdown');
 
+    <div class="content">
+      <h1> Welcome to the Admin Dashboard </h1>
+      <div id="chatbot-container"></div>
+      <div class="cards">
+        <div class="card"><div class="box"><h2>Students</h2></div><div class="icon-case"><img src="/static/images/Students.png/" alt=""></div></div>
+        <div class="card"><div class="box"><h2>Teacher</h2></div><div class="icon-case"><img src="/static/images/Teachers.png/" alt=""></div></div>
+        <div class="card"><div class="box"><h2>Timetable</h2></div><div class="icon-case"><img src="/static/images/Timetable.png/" alt=""></div></div>
+        <div class="card"><div class="box"><h2>Attendance</h2></div><div class="icon-case"><img src="/static/images/Attendance.png/" alt=""></div></div>
+      </div>
+    </div>
+  </div>
 
-            dropdown.addEventListener("mouseenter", function (event) {
-                event.stopPropagation();
-                submenu.style.display = 'block';
-            });
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const toggle = document.getElementById("manage-courses-toggle");
+      const submenu = toggle.nextElementSibling;
 
-            dropdown.addEventListener("mouseleave", function (event) {
-                event.stopPropagation();
-                submenu.style.display = 'none';
-            });
+      toggle.addEventListener("click", function (e) {
+        e.preventDefault();
+        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+      });
 
-            document.addEventListener("click", function (event) {
-                if (notificationsDropdown && !event.target.closest('#notifications-dropdown') && event.target !== notificationsIcon) {
-                    notificationsDropdown.style.display = "none";
-                }
-                submenu.style.display = "none";
-            });
-
-            if (notificationsIcon && notificationsDropdown) {
-                notificationsIcon.addEventListener('click', function (event) {
-                    event.stopPropagation();
-                    notificationsDropdown.style.display = notificationsDropdown.style.display === "block" ? "none" : "block";
-                });
-            }
-
-            const readMoreLinks = document.querySelectorAll('.read-more-link');
-            const readLessLinks = document.querySelectorAll('.read-less-link');
-            const deleteForms = document.querySelectorAll('.unread-message-item form');
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            readMoreLinks.forEach(link => {
-                link.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const messageItem = this.closest('.unread-message-item');
-                    const shortMessage = messageItem.querySelector('.short-message');
-                    const fullMessage = messageItem.querySelector('.full-message');
-
-                    shortMessage.style.display = 'none';
-                    fullMessage.style.display = 'block';
-                });
-            });
-
-            readLessLinks.forEach(link => {
-                link.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const messageItem = this.closest('.unread-message-item');
-                    const shortMessage = messageItem.querySelector('.short-message');
-                    const fullMessage = messageItem.querySelector('.full-message');
-
-                    fullMessage.style.display = 'none';
-                    shortMessage.style.display = 'block';
-                });
-            });
-
-            deleteForms.forEach(form => {
-                form.addEventListener('submit', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const messageId = this.action.split('/').slice(-2)[0];
-                    const listItem = this.closest('.unread-message-item');
-
-                    fetch(`/delete_message/${messageId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken,
-                        },
-                        body: JSON.stringify({})
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            listItem.remove();
-                            updateNotificationCount();
-                        } else {
-                            console.error('Failed to delete message.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting message:', error);
-                    });
-                });
-            });
-
-            function updateNotificationCount() {
-                const notificationBadge = document.getElementById('notification-badge');
-                const unreadMessageItems = document.querySelectorAll('.unread-message-item');
-                if (notificationBadge) {
-                    notificationBadge.textContent = unreadMessageItems.length;
-                    if (unreadMessageItems.length === 0) {
-                        notificationBadge.style.display = 'none';
-                        notificationsDropdown.innerHTML = '<p style="color: #333; padding: 10px;">No new messages.</p>';
-                    }
-                }
-            }
-        });
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
+      document.addEventListener("click", function (e) {
+        if (!toggle.contains(e.target) && !submenu.contains(e.target)) {
+          submenu.style.display = "none";
         }
-        function sendMessage() {
-            var userMessage = document.getElementById('userMessage').value;
-            if (userMessage.trim() !== "") {
-                displayMessage(userMessage, 'user');
-                var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                fetch('/chatbot/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: JSON.stringify({ message: userMessage }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    var botMessage = data.response;
-                    displayMessage(botMessage, 'bot');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    displayMessage('An error occurred: ' + error.message, 'bot');
-                });
-                document.getElementById('userMessage').value = "";
-            }
-        }
-
-        function displayMessage(message, sender) {
-            var messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', sender);
-            messageDiv.textContent = message;
-            document.getElementById('chatbot-messages').appendChild(messageDiv);
-            document.getElementById('chatbot-messages').scrollTop = document.getElementById('chatbot-messages').scrollHeight;
-        }
-    </script>
+      });
+    });
+  </script>
 </body>
 </html>

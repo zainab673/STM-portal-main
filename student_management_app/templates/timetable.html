@@ -1,48 +1,1149 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timetable for Semester {{ semester }}</title>
-    <link rel="stylesheet" href="/static/css/style3.css"> 
+    <title>Admin Timetable Management</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap">
+    <style>
+        /* General Body and Container Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top to prevent large empty space */
+            min-height: 100vh;
+            padding: 50px 0; /* Add vertical padding */
+        }
+         /* General Body and Container Styles */
+        body {
+            background-image: url('/static/images/Bg_3.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            animation: gradientAnimation 15s ease infinite; /* Apply animation */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top to prevent large empty space */
+            min-height: 100vh;
+            padding: 50px 0; /* Add vertical padding */
+        }
+
+        .container {
+            padding: 20px;
+            width: 95%;
+            max-width: 1200px;
+            margin: 50px auto; /* Adjusted margin for no sidebar */
+        }
+
+        .timetable-container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #003366;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: stretch;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+
+        .semester-nav {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .semester-nav button, .button-group button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .semester-nav button {
+            background-color: #0055a5;
+            color: white;
+        }
+
+        .semester-nav button.active {
+            background-color: #003366;
+            font-weight: 500;
+        }
+
+        #add-slot-btn { background-color: #28a745; color: white; }
+        #add-instructor-btn, #add-classroom-btn { background-color: #17a2b8; color: white; }
+        #save-btn { background-color: #007bff; color: white; }
+        #clear-btn { background-color: #dc3545; color: white; }
+
+        .semester-nav button:hover, .button-group button:hover {
+            opacity: 0.9;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .timetable th, .timetable td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9em;
+        }
+
+        .timetable th {
+            background-color: #f8f8f8;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .timetable td {
+            position: relative;
+            cursor: pointer;
+            background-color: #fff;
+        }
+
+        .timetable td.editable:hover {
+            background-color: #f9f9f9;
+        }
+
+        .slot-details {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            z-index: 10;
+            display: none;
+            min-width: 250px;
+            font-size: 0.85em;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .slot-details p {
+            margin: 6px 0;
+            color: #555;
+        }
+
+        .slot-details strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .add-slot-modal, .add-instructor-modal, .add-classroom-modal, .message-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .add-slot-modal-content, .add-instructor-modal-content, .add-classroom-modal-content, .message-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center content for message modal */
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover, .close-button:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="time"],
+        .form-group select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 0.9em;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="time"]:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .modal-buttons {
+            text-align: right;
+            margin-top: 25px;
+            display: flex; /* Use flex for buttons */
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 0; /* Reset margin-left from previous rule */
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .modal-buttons button.save {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .modal-buttons button.cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .modal-buttons button:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+            text-align: left;
+        }
+
+        .form-group.error input,
+        .form-group.error select {
+            border-color: red;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        /* Message Modal Specific Styles */
+        .message-modal-content h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .message-modal-content p {
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .message-modal-content button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .message-modal-content button:hover {
+            opacity: 0.9;
+        }
+
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 0;
+            }
+            .container {
+                width: 100%;
+                padding: 10px;
+                margin: 20px auto;
+            }
+
+            .timetable-container {
+                padding: 15px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .button-group {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .semester-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .semester-nav button, .button-group button {
+                font-size: 0.85em;
+                padding: 8px 12px;
+            }
+
+            .timetable th, .timetable td {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+
+            .slot-details {
+                font-size: 0.8em;
+                min-width: 220px;
+            }
+
+            .add-slot-modal-content, .add-instructor-modal-content, .add-classroom-modal-content, .message-modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 20px;
+            }
+
+            .form-group input[type="text"],
+            .form-group input[type="time"],
+            .form-group select {
+                font-size: 0.85em;
+            }
+
+            .modal-buttons button {
+                font-size: 0.85em;
+                padding: 8px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .timetable th, .timetable td {
+                font-size: 0.75em;
+                padding: 8px;
+            }
+
+            .slot-details {
+                font-size: 0.75em;
+                min-width: 200px;
+            }
+
+            .semester-nav button, .button-group button {
+                font-size: 0.75em;
+                padding: 6px 10px;
+            }
+
+            .form-group label {
+                font-size: 0.8em;
+            }
+
+            .form-group input[type="text"],
+            .form-group input[type="time"],
+            .form-group select {
+                font-size: 0.8em;
+            }
+
+            .modal-buttons button {
+                font-size: 0.8em;
+                padding: 8px 12px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Timetable for Semester {{ semester }}</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Sr. No</th>
-                    <th>Day</th> 
-                    <th>Subject</th>
-                    <th>Instructor</th>
-                    <th>Timing</th>
-                    <th>Classroom</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in timetable %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.day }}</td> 
-                        <td>{{ item.subject }}</td>
-                        <td>{{ item.instructor }}</td>
-                        <td>{{ item.timing }}</td>
-                        <td>{{ item.classroom }}</td>
-                        <td>
-                            <a href="/edit/{{ item.id }}/">Edit</a> |
-                            <a href="/delete/{{ item.id }}/">Delete</a>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7">No timetable data available for this semester.</td> <!-- updated colspan to 7 -->
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="timetable-container">
+            <h2>Timetable</h2>
+            {% if user_role == 'admin' %}
+            <div class="controls">
+                <div class="semester-nav">
+                    <button onclick="showTimetable(1)" class="active">Semester 1</button>
+                    <button onclick="showTimetable(2)">Semester 2</button>
+                    <button onclick="showTimetable(3)">Semester 3</button>
+                    <button onclick="showTimetable(4)">Semester 4</button>
+                    <button onclick="showTimetable(5)">Semester 5</button>
+                    <button onclick="showTimetable(6)">Semester 6</button>
+                    <button onclick="showTimetable(7)">Semester 7</button>
+                    <button onclick="showTimetable(8)">Semester 8</button>
+                </div>
+                <div class="button-group">
+                    <button id="add-slot-btn" onclick="openAddSlotModal()">Add Slot</button>
+                    <button id="add-instructor-btn" onclick="openAddInstructorModal()">Add Instructor</button>
+                    <button id="add-classroom-btn" onclick="openAddClassroomModal()">Add Classroom</button>
+                    <button id="save-btn" onclick="saveTimetable()">Save Timetable</button>
+                    <button id="clear-btn" onclick="clearTimetable(currentSemester)">Clear Timetable</button>
+                </div>
+            </div>
+            {% else %}
+            <div class="semester-nav">
+                <button onclick="showTimetable(1)" class="active">Semester 1</button>
+                <button onclick="showTimetable(2)">Semester 2</button>
+                <button onclick="showTimetable(3)">Semester 3</button>
+                <button onclick="showTimetable(4)">Semester 4</button>
+                <button onclick="showTimetable(5)">Semester 5</button>
+                <button onclick="showTimetable(6)">Semester 6</button>
+                <button onclick="showTimetable(7)">Semester 7</button>
+                <button onclick="showTimetable(8)">Semester 8</button>
+            </div>
+            {% endif %}
+
+            <div id="timetable-data">
+            </div>
+        </div>
     </div>
+
+    {% if user_role == 'admin' %}
+    <div id="addSlotModal" class="add-slot-modal">
+        <div class="add-slot-modal-content">
+            <span class="close-button" onclick="closeAddSlotModal()">&times;</span>
+            <h3>Add/Edit Timetable Slot</h3>
+            <form id="addSlotForm">
+                <div class="form-group">
+                    <label for="day">Day:</label>
+                    <select id="day">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="startTime" required>
+                    <div class="error-message">Please enter a valid start time.</div>
+                </div>
+                <div class="form-group">
+                    <label for="endTime">End Time:</label>
+                    <input type="time" id="endTime" required>
+                    <div class="error-message">Please enter a valid end time.</div>
+                </div>
+                <div class="form-group">
+                    <label for="name">Class/Subject Name:</label>
+                    <input type="text" id="name" required>
+                    <div class="error-message">Please enter a class/subject name.</div>
+                </div>
+                <div class="form-group">
+                    <label for="room">Room:</label>
+                    <select id="room">
+                        <option value="">-- Select Room --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="instructor">Instructor:</label>
+                    <select id="instructor">
+                        <option value="">-- Select Instructor --</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel" onclick="closeAddSlotModal()">Cancel</button>
+                    <button type="button" class="save" onclick="saveNewSlot()">Add Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addInstructorModal" class="add-instructor-modal">
+        <div class="add-instructor-modal-content">
+            <span class="close-button" onclick="closeAddInstructorModal()">&times;</span>
+            <h3>Add New Instructor</h3>
+            <form id="addInstructorForm">
+                <div class="form-group">
+                    <label for="instructorName">Instructor Name:</label>
+                    <input type="text" id="instructorName" required>
+                    <div class="error-message">Please enter instructor name.</div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel" onclick="closeAddInstructorModal()">Cancel</button>
+                    <button type="button" class="save" onclick="addNewInstructor()">Add Instructor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addClassroomModal" class="add-classroom-modal">
+        <div class="add-classroom-modal-content">
+            <span class="close-button" onclick="closeAddClassroomModal()">&times;</span>
+            <h3>Add New Classroom</h3>
+            <form id="addClassroomForm">
+                <div class="form-group">
+                    <label for="classroomName">Classroom Name:</label>
+                    <input type="text" id="classroomName" required>
+                    <div class="error-message">Please enter classroom name.</div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel" onclick="closeAddClassroomModal()">Cancel</button>
+                    <button type="button" class="save" onclick="addNewClassroom()">Add Classroom</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="messageModal" class="message-modal">
+        <div class="message-modal-content">
+            <span class="close-button" onclick="closeMessageModal()">&times;</span>
+            <h3 id="messageModalTitle"></h3>
+            <p id="messageModalText"></p>
+            <button onclick="closeMessageModal()">OK</button>
+        </div>
+    </div>
+    {% endif %}
+
+   <script>
+    const timetableData = {
+        1: {},
+        2: {},
+        3: {},
+        4: {},
+        5: {},
+        6: {},
+        7: {},
+        8: {}
+    };
+
+    const instructors = [];
+    const classrooms = [];
+
+    let currentSemester = 1;
+    let isEditingSlot = false;
+    let editingSlotKey = null;
+
+    const addSlotModal = document.getElementById("addSlotModal");
+    const addSlotForm = document.getElementById("addSlotForm");
+    const addInstructorModal = document.getElementById("addInstructorModal");
+    const addInstructorForm = document.getElementById("addInstructorForm");
+    const addClassroomModal = document.getElementById("addClassroomModal");
+    const addClassroomForm = document.getElementById("addClassroomForm");
+    const messageModal = document.getElementById("messageModal");
+    const messageModalTitle = document.getElementById("messageModalTitle");
+    const messageModalText = document.getElementById("messageModalText");
+
+    // Key for storing updated semesters for notifications
+    const TIMETABLE_UPDATED_KEY = 'timetableUpdatedSemesters';
+    // New key for storing change counts per semester
+    const TIMETABLE_CHANGE_COUNTS_KEY = 'timetableChangeCounts';
+
+    // Global variable to store change counts for each semester
+    let semesterChangeCounts = {};
+
+
+    function displayTimetable(semester) {
+        const timetableContainer = document.getElementById('timetable-data');
+        timetableContainer.innerHTML = '';
+        const currentTimetable = timetableData[semester];
+
+        if (currentTimetable && Object.keys(currentTimetable).length > 0) {
+            const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            const allTimes = getAllUniqueTimes(currentTimetable);
+            allTimes.sort();
+
+            if (allTimes.length > 0 && days.length > 0) {
+                const table = document.createElement('table');
+                table.className = 'timetable';
+
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = '<th>Day/Time</th>';
+                allTimes.forEach(time => {
+                    const endTime = currentTimetable[Object.keys(currentTimetable)[0]]?.[time]?.endTime; // Use first day's time to get endTime
+                    const timeRange = endTime ? `${formatTime(time)} - ${formatTime(endTime)}` : formatTime(time);
+                    headerRow.innerHTML += `<th>${timeRange}</th>`;
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                days.forEach(day => {
+                    const dataRow = document.createElement('tr');
+                    dataRow.innerHTML = `<th>${day}</th>`;
+                    allTimes.forEach(time => {
+                        const slotData = currentTimetable[day] && currentTimetable[day][time];
+                        const cell = document.createElement('td');
+                        cell.classList.add('editable');
+                        if (slotData) {
+                            cell.innerHTML = `<div style="white-space: pre-wrap;">${slotData.name}<br>Instructor: ${slotData.instructor || '-'}<br>Room: ${slotData.room || '-'}</div>`;
+                            cell.addEventListener('mouseover', (event) => showSlotDetails(event, slotData));
+                            cell.addEventListener('mouseout', hideSlotDetails);
+                            const detailsDiv = document.createElement('div');
+                            detailsDiv.className = 'slot-details';
+                            detailsDiv.innerHTML = `<p><strong>${slotData.name}</strong></p>
+                                                    <p>Time: ${formatTime(slotData.startTime)} - ${formatTime(slotData.endTime)}</p>
+                                                    <p>Room: ${slotData.room || '-'}</p>
+                                                    <p>Instructor: ${slotData.instructor || '-'}</p>`;
+                            cell.appendChild(detailsDiv);
+                            {% if user_role == 'admin' %}
+                            cell.addEventListener('click', () => openEditSlotModal(day, time, slotData));
+                            {% endif %}
+                        } else {
+                            {% if user_role == 'admin' %}
+                            cell.addEventListener('click', () => openAddSlotModal(day, time));
+                            {% endif %}
+                        }
+                        dataRow.appendChild(cell);
+                    });
+                    tbody.appendChild(dataRow);
+                });
+
+                table.appendChild(tbody);
+                timetableContainer.appendChild(table);
+            } else {
+                timetableContainer.innerHTML = `<p class="no-timetable">No timetable slots added for Semester ${semester}. {% if user_role == 'admin' %}Use the "Add Slot" button.{% endif %}</p>`;
+            }
+        } else {
+            timetableContainer.innerHTML = `<p class="no-timetable">No timetable created for Semester ${semester}. {% if user_role == 'admin' %}Use the "Add Slot" button.{% endif %}</p>`;
+        }
+        populateDropdowns();
+    }
+
+    function getAllUniqueTimes(timetable) {
+        const times = new Set();
+        for (const day in timetable) {
+            if (timetable.hasOwnProperty(day)) {
+                for (const time in timetable[day]) {
+                    if (timetable[day].hasOwnProperty(time)) {
+                        times.add(time);
+                    }
+                }
+            }
+        }
+        return Array.from(times);
+    }
+
+    function formatTime(timeString) {
+        const date = new Date(`2000-01-01T${timeString}`);
+        return date.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function showTimetable(semester) {
+        currentSemester = semester;
+        const activeSemesterButton = document.querySelector('.semester-nav button.active');
+        if (activeSemesterButton) {
+            activeSemesterButton.classList.remove('active');
+        }
+        const currentButton = document.querySelector(`.semester-nav button:nth-child(${semester})`);
+        if (currentButton) {
+            currentButton.classList.add('active');
+        }
+        displayTimetable(semester);
+    }
+
+    function openAddSlotModal(day = null, time = null) {
+        isEditingSlot = false;
+        editingSlotKey = null;
+        addSlotForm.reset();
+        document.querySelector("#addSlotForm .modal-buttons .save").textContent = "Add Slot";
+
+        if (day) {
+            document.getElementById("day").value = day;
+        }
+        if (time) {
+            document.getElementById("startTime").value = time;
+        }
+        addSlotModal.style.display = "flex"; /* Changed to flex for centering */
+        resetFormErrors(addSlotForm);
+    }
+
+    function closeAddSlotModal() {
+        addSlotModal.style.display = "none";
+    }
+
+    function saveNewSlot() {
+        const day = document.getElementById("day").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+        const name = document.getElementById("name").value;
+        const room = document.getElementById("room").value;
+        const instructor = document.getElementById("instructor").value;
+
+        let hasErrors = false;
+        if (!startTime) {
+            setFormError(addSlotForm, "startTime", "Please enter a valid start time.");
+            hasErrors = true;
+        } else {
+            clearFormError(addSlotForm, "startTime");
+        }
+        if (!endTime) {
+            setFormError(addSlotForm, "endTime", "Please enter a valid end time.");
+            hasErrors = true;
+        } else {
+            clearFormError(addSlotForm, "endTime");
+        }
+        if (!name.trim()) { // Use trim() to check for empty strings
+            setFormError(addSlotForm, "name", "Please enter a class/subject name.");
+            hasErrors = true;
+        } else {
+            clearFormError(addSlotForm, "name");
+        }
+
+        if (hasErrors) {
+            return;
+        }
+
+        // Validate end time is after start time
+        if (startTime && endTime) {
+            const startMinutes = toMinutes(startTime);
+            const endMinutes = toMinutes(endTime);
+            if (endMinutes <= startMinutes) {
+                setFormError(addSlotForm, "endTime", "End time must be after start time.");
+                return;
+            } else {
+                clearFormError(addSlotForm, "endTime");
+            }
+        }
+
+
+        if (isTimeSlotConflict(day, startTime, endTime, currentSemester, editingSlotKey)) {
+            showMessageModal("Conflict Detected", "The selected time slot conflicts with an existing entry. Please choose a different time or adjust the duration.");
+            return;
+        }
+
+        // If editing, delete the old slot before adding the new one if time has changed
+        if (isEditingSlot && (editingSlotKey.day !== day || editingSlotKey.time !== startTime)) {
+            if (timetableData[currentSemester][editingSlotKey.day]) {
+                delete timetableData[currentSemester][editingSlotKey.day][editingSlotKey.time];
+                // Clean up day if no more slots
+                if (Object.keys(timetableData[currentSemester][editingSlotKey.day]).length === 0) {
+                    delete timetableData[currentSemester][editingSlotKey.day];
+                }
+            }
+        }
+
+        if (!timetableData[currentSemester][day]) {
+            timetableData[currentSemester][day] = {};
+        }
+        timetableData[currentSemester][day][startTime] = {
+            startTime,
+            endTime,
+            name,
+            room,
+            instructor
+        };
+
+        isEditingSlot = false; // Reset editing state
+        editingSlotKey = null; // Clear editing key
+
+        saveTimetable(); // Call saveTimetable here to trigger save and notification updates
+        displayTimetable(currentSemester);
+        closeAddSlotModal();
+        showMessageModal("Success", "Timetable slot saved successfully!");
+    }
+
+    function isTimeSlotConflict(day, newStartTime, newEndTime, semester, currentEditingSlotKey = null) {
+        const daySchedule = timetableData[semester][day];
+        if (!daySchedule) return false;
+
+        const newStartMinutes = toMinutes(newStartTime);
+        const newEndMinutes = toMinutes(newEndTime);
+
+        for (const time in daySchedule) {
+            // Skip the currently edited slot if in edit mode
+            if (currentEditingSlotKey && currentEditingSlotKey.day === day && currentEditingSlotKey.time === time) {
+                continue;
+            }
+
+            const existingStartTime = daySchedule[time].startTime;
+            const existingEndTime = daySchedule[time].endTime;
+
+            const existingStartMinutes = toMinutes(existingStartTime);
+            const existingEndMinutes = toMinutes(existingEndTime);
+
+            // Check for overlap: (start1 < end2 && end1 > start2)
+            if (newStartMinutes < existingEndMinutes && newEndMinutes > existingStartMinutes) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function toMinutes(timeString) {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    function openEditSlotModal(day, time, slotData) {
+        isEditingSlot = true;
+        editingSlotKey = {
+            day,
+            time
+        };
+
+        document.getElementById("day").value = day;
+        document.getElementById("startTime").value = time;
+        document.getElementById("endTime").value = slotData.endTime;
+        document.getElementById("name").value = slotData.name;
+        document.getElementById("room").value = slotData.room;
+        document.getElementById("instructor").value = slotData.instructor;
+        document.querySelector("#addSlotForm .modal-buttons .save").textContent = "Update Slot";
+        addSlotModal.style.display = "flex"; /* Changed to flex for centering */
+        resetFormErrors(addSlotForm);
+    }
+
+
+    function showSlotDetails(event, slotData) {
+        const detailsDiv = event.target.querySelector('.slot-details');
+        if (detailsDiv) {
+            detailsDiv.style.display = 'block';
+            const rect = event.target.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const detailsWidth = detailsDiv.offsetWidth;
+
+            // Adjust position to prevent going off-screen
+            if (rect.right + detailsWidth + 20 > viewportWidth) { // +20 for some margin
+                detailsDiv.style.left = `${rect.left - detailsWidth - 10}px`;
+            } else {
+                detailsDiv.style.left = `${rect.right + 10}px`;
+            }
+            detailsDiv.style.top = `${rect.top + window.scrollY - 5}px`;
+        }
+    }
+
+    function hideSlotDetails() {
+        const detailsDivs = document.querySelectorAll('.slot-details');
+        detailsDivs.forEach(div => {
+            div.style.display = 'none';
+        });
+    }
+
+    function openAddInstructorModal() {
+        document.getElementById("instructorName").value = ""; // Clear input on open
+        addInstructorModal.style.display = "flex"; /* Changed to flex for centering */
+        resetFormErrors(addInstructorForm);
+    }
+
+    function closeAddInstructorModal() {
+        addInstructorModal.style.display = "none";
+    }
+
+    function addNewInstructor() {
+        const instructorNameInput = document.getElementById("instructorName");
+        const instructorName = instructorNameInput.value.trim();
+
+        if (!instructorName) {
+            setFormError(addInstructorForm, "instructorName", "Please enter instructor name.");
+            return;
+        } else {
+            clearFormError(addInstructorForm, "instructorName");
+        }
+
+        if (instructors.includes(instructorName)) {
+            showMessageModal("Duplicate Entry", `Instructor "${instructorName}" already exists.`);
+            return;
+        }
+
+        instructors.push(instructorName);
+        instructors.sort(); // Keep sorted
+        populateDropdowns();
+        closeAddInstructorModal();
+        showMessageModal("Success", `Instructor "${instructorName}" added successfully!`);
+    }
+
+    function openAddClassroomModal() {
+        document.getElementById("classroomName").value = ""; // Clear input on open
+        addClassroomModal.style.display = "flex"; /* Changed to flex for centering */
+        resetFormErrors(addClassroomForm);
+    }
+
+    function closeAddClassroomModal() {
+        addClassroomModal.style.display = "none";
+    }
+
+    function addNewClassroom() {
+        const classroomNameInput = document.getElementById("classroomName");
+        const classroomName = classroomNameInput.value.trim();
+
+        if (!classroomName) {
+            setFormError(addClassroomForm, "classroomName", "Please enter classroom name.");
+            return;
+        } else {
+            clearFormError(addClassroomForm, "classroomName");
+        }
+
+        if (classrooms.includes(classroomName)) {
+            showMessageModal("Duplicate Entry", `Classroom "${classroomName}" already exists.`);
+            return;
+        }
+
+        classrooms.push(classroomName);
+        classrooms.sort(); // Keep sorted
+        populateDropdowns();
+        closeAddClassroomModal();
+        showMessageModal("Success", `Classroom "${classroomName}" added successfully!`);
+    }
+
+    function populateDropdowns() {
+        const instructorDropdown = document.getElementById("instructor");
+        instructorDropdown.innerHTML = '<option value="">-- Select Instructor --</option>';
+        instructors.forEach(instructor => {
+            const option = document.createElement("option");
+            option.value = instructor;
+            option.textContent = instructor;
+            instructorDropdown.appendChild(option);
+        });
+
+        const roomDropdown = document.getElementById("room");
+        roomDropdown.innerHTML = '<option value="">-- Select Room --</option>';
+        classrooms.forEach(room => {
+            const option = document.createElement("option");
+            option.value = room;
+            option.textContent = room;
+            roomDropdown.appendChild(option);
+        });
+    }
+
+    function saveTimetable() {
+        // Use the global currentSemester variable directly
+        const timetableJSON = JSON.stringify(timetableData[currentSemester]);
+        localStorage.setItem('timetableData_Semester_' + currentSemester, timetableJSON);
+
+        localStorage.setItem('timetableInstructors', JSON.stringify(instructors));
+        localStorage.setItem('timetableClassrooms', JSON.stringify(classrooms));
+
+        // --- Notification Logic for Student Panel ---
+        const updatedSemestersStr = localStorage.getItem(TIMETABLE_UPDATED_KEY);
+        let updatedSemesters = updatedSemestersStr ? JSON.parse(updatedSemestersStr) : [];
+
+        // Convert currentSemester to string for consistent storage and comparison
+        const currentSemesterString = currentSemester.toString();
+
+        if (!updatedSemesters.includes(currentSemesterString)) {
+            updatedSemesters.push(currentSemesterString);
+        }
+        localStorage.setItem(TIMETABLE_UPDATED_KEY, JSON.stringify(updatedSemesters));
+        console.log('Admin: timetableUpdatedSemesters after save:', localStorage.getItem(TIMETABLE_UPDATED_KEY));
+
+        if (!semesterChangeCounts[currentSemesterString]) {
+            semesterChangeCounts[currentSemesterString] = 0;
+        }
+        semesterChangeCounts[currentSemesterString]++;
+        localStorage.setItem(TIMETABLE_CHANGE_COUNTS_KEY, JSON.stringify(semesterChangeCounts));
+        console.log('Admin: semesterChangeCounts after save:', localStorage.getItem(TIMETABLE_CHANGE_COUNTS_KEY));
+        // --- End Notification Logic ---
+
+        showMessageModal("Save Successful", `Timetable data for Semester ${currentSemester} saved successfully!`);
+    }
+
+    function loadTimetable() {
+        for (let i = 1; i <= 8; i++) {
+            const savedTimetable = localStorage.getItem('timetableData_Semester_' + i);
+            if (savedTimetable) {
+                try {
+                    timetableData[i] = JSON.parse(savedTimetable);
+                } catch (error) {
+                    console.error(`Error parsing saved timetable data for Semester ${i}:`, error);
+                    showMessageModal("Load Error", `Error loading timetable data for Semester ${i}. Data might be corrupted.`);
+                }
+            }
+        }
+
+        const savedInstructors = localStorage.getItem('timetableInstructors');
+        const savedClassrooms = localStorage.getItem('timetableClassrooms');
+        const savedChangeCounts = localStorage.getItem(TIMETABLE_CHANGE_COUNTS_KEY);
+
+        if (savedInstructors) {
+            try {
+                const parsedInstructors = JSON.parse(savedInstructors);
+                instructors.splice(0, instructors.length, ...parsedInstructors); // Clear and push
+                instructors.sort();
+            } catch (e) {
+                console.error('Error parsing saved instructor data:', e);
+                showMessageModal("Load Error", 'Error loading saved instructors. Data might be corrupted.');
+            }
+        }
+        if (savedClassrooms) {
+            try {
+                const parsedClassrooms = JSON.parse(savedClassrooms);
+                classrooms.splice(0, classrooms.length, ...parsedClassrooms); // Clear and push
+                classrooms.sort();
+            } catch (e) {
+                console.error('Error parsing saved classroom data:', e);
+                showMessageModal("Load Error", 'Error loading saved classrooms. Data might be corrupted.');
+            }
+        }
+        if (savedChangeCounts) {
+            try {
+                semesterChangeCounts = JSON.parse(savedChangeCounts);
+            } catch (e) {
+                console.error('Error parsing saved change counts:', e);
+                showMessageModal("Load Error", 'Error loading saved timetable change counts. Data might be corrupted.');
+            }
+        }
+        displayTimetable(currentSemester);
+    }
+
+    function clearTimetable(semester) {
+        showMessageModal("Confirm Clear", `Are you sure you want to clear the timetable for Semester ${semester}?`, true, () => {
+            timetableData[semester] = {};
+            localStorage.removeItem('timetableData_Semester_' + semester);
+
+            const semesterString = semester.toString();
+
+            if (!semesterChangeCounts[semesterString]) {
+                semesterChangeCounts[semesterString] = 0;
+            }
+            semesterChangeCounts[semesterString]++;
+            localStorage.setItem(TIMETABLE_CHANGE_COUNTS_KEY, JSON.stringify(semesterChangeCounts));
+
+            const updatedSemestersStr = localStorage.getItem(TIMETABLE_UPDATED_KEY);
+            let updatedSemesters = updatedSemestersStr ? JSON.parse(updatedSemestersStr) : [];
+            updatedSemesters = updatedSemesters.filter(s => s !== semesterString);
+            localStorage.setItem(TIMETABLE_UPDATED_KEY, JSON.stringify(updatedSemesters));
+
+            displayTimetable(semester);
+            showMessageModal("Cleared", `Timetable for Semester ${semester} has been cleared.`);
+        });
+    }
+
+    function setFormError(formElement, inputId, errorMessage) {
+        const inputElement = formElement.querySelector(`#${inputId}`);
+        const formGroup = inputElement.closest('.form-group');
+        if (formGroup) {
+            formGroup.classList.add('error');
+            const errorElement = formGroup.querySelector('.error-message');
+            if (errorElement) {
+                errorElement.textContent = errorMessage;
+            }
+        }
+    }
+
+    function clearFormError(formElement, inputId) {
+        const inputElement = formElement.querySelector(`#${inputId}`);
+        const formGroup = inputElement.closest('.form-group');
+        if (formGroup) {
+            formGroup.classList.remove('error');
+            const errorElement = formGroup.querySelector('.error-message');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        }
+    }
+
+    function resetFormErrors(formElement) {
+        const errorGroups = formElement.querySelectorAll('.form-group.error');
+        errorGroups.forEach(group => {
+            group.classList.remove('error');
+            const errorElement = group.querySelector('.error-message');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        });
+    }
+
+    let confirmCallback = null;
+
+    function showMessageModal(title, message, isConfirm = false, callback = null) {
+        messageModalTitle.textContent = title;
+        messageModalText.textContent = message;
+        const okButton = messageModal.querySelector('button');
+
+        const existingCancelButton = messageModal.querySelector('button[data-action="cancel"]');
+        if (existingCancelButton) {
+            existingCancelButton.remove();
+        }
+
+        if (isConfirm) {
+            okButton.textContent = "Yes";
+            okButton.setAttribute('data-action', 'confirm');
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = "No";
+            cancelButton.setAttribute('data-action', 'cancel');
+            cancelButton.classList.add('cancel'); /* Apply cancel button styling */
+            cancelButton.onclick = closeMessageModal;
+            cancelButton.style.marginLeft = '10px';
+            okButton.parentNode.insertBefore(cancelButton, okButton.nextSibling);
+
+            okButton.onclick = () => {
+                if (callback) callback();
+                closeMessageModal();
+            };
+            confirmCallback = callback;
+        } else {
+            okButton.textContent = "OK";
+            okButton.setAttribute('data-action', 'ok');
+            okButton.onclick = closeMessageModal;
+            confirmCallback = null;
+        }
+        messageModal.style.display = "flex"; /* Changed to flex for centering */
+    }
+
+    function closeMessageModal() {
+        messageModal.style.display = "none";
+        const existingCancelButton = messageModal.querySelector('button[data-action="cancel"]');
+        if (existingCancelButton) {
+            existingCancelButton.remove();
+        }
+    }
+
+    window.onload = function() {
+        loadTimetable();
+        showTimetable(currentSemester);
+
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', saveTimetable);
+        }
+    }
+</script>
 </body>
 </html>

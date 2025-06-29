@@ -7,6 +7,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/style1.css">
     <title>Student Dashboard</title>
+    <style>
+        /* Botpress Chatbot Styles */
+        #chatbot-container-student {
+            position: fixed; /* Fix the chatbot container to the bottom */
+            bottom: 0;
+            left: 20vw; /* Align with the left edge of the content area */
+            width: 80vw; /* Match the content width */
+            height: auto; /* Adjust height as needed */
+            z-index: 3; /* Ensure it's above other content */
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent; /* Ensure the background doesn't interfere */
+        }
+
+        #chatbot-container-student iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 70vh; /* Ensure the iframe has a minimum height */
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Notification Styles */
+        #notification-area {
+            position: relative;
+            display: inline-block;
+        }
+
+        #notification-icon {
+            cursor: pointer;
+            width: 36px; /* Even larger size */
+            height: 36px; /* Even larger size */
+            vertical-align: middle;
+        }
+
+        #notification-badge {
+            position: absolute;
+            top: -10px; /* Adjusted position for larger icon */
+            right: -10px; /* Adjusted position for larger icon */
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 6px; /* Adjusted padding */
+            font-size: 0.8em;
+            min-width: 18px; /* Ensure it's wide enough for a single digit */
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        #notification-dropdown {
+            position: absolute;
+            top: 40px; /* Adjusted top for larger icon */
+            right: -10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px; /* Increased padding */
+            display: none; /* Hidden by default */
+            min-width: 220px; /* Slightly wider */
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+
+        #notification-message {
+            margin-bottom: 12px; /* Increased margin */
+        }
+
+        #notification-dropdown button {
+            padding: 10px 20px; /* Increased padding */
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        #notification-dropdown button:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,7 +99,7 @@
             {{ message }}
         </div>
     {% endfor %}
-{% endif %}
+    {% endif %}
 
     <div class="side-menu">
         <br><br>
@@ -25,45 +108,43 @@
         </div>
         <ul>
             <li>Dashboard</li>
-            <li>My Courses </li>
             <li>View Attendance</li>
             <li><a href="https://classroom.google.com/">Google Classroom</a></li>
-            <li class="dropdown">Timetable
-                <ul class="submenu">
-                    <li><a href="#">Semester 1</a></li>
-                    <li><a href="#">Semester 2</a></li>
-                    <li><a href="#">Semester 3</a></li>
-                    <li><a href="#">Semester 4</a></li>
-                    <li><a href="#">Semester 5</a></li>
-                    <li><a href="#">Semester 6</a></li>
-                    <li><a href="#">Semester 7</a></li>
-                    <li><a href="#">Semester 8</a></li>
-                </ul>
-            </li>
+            <li><a href="{% url 'student_timetable' %}">Timetable</a></li>
         </ul>
     </div>
     <div class="container">
         <div class="header">
             <div class="nav">
                 <div class="search">
-                    <input type="text" placeholder="Search..">
-                    <button type="submit"><img src="/static/images/search.png/" alt=""></button>
+                    {% comment %} <input type="text" placeholder="Search..">
+                    <button type="submit"><img src="/static/images/search.png/" alt=""></button> {% endcomment %}
                 </div>
                 <div class="user">
-                    <img src="/static/images/notifications.png/" alt="">
+                    <div id="notification-area">
+                        <img src="/static/images/notifications.png/" alt="Notifications" id="notification-icon">
+                        <span id="notification-badge"></span>
+                        <div id="notification-dropdown">
+                            <div id="notification-list">
+                                </div>
+                            <button id="clear-notification-button">Okay</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="content">
             <h1> Welcome to the Student Dashboard </h1>
+            <div id="chatbot-container-student">
+                </div>
             <div class="cards">
                 <div class="card">
                     <div class="box">
                         <h2>My Courses</h2>
                     </div>
                     <div class="icon-case">
-                        <img src="/static/images/Students.png/" alt="">
+                        <img src="/static/images/Students.png/" alt="Students Icon">
                     </div>
                 </div>
                 <div class="card">
@@ -71,7 +152,7 @@
                         <h2>Google Classroom</h2>
                     </div>
                     <div class="icon-case">
-                        <img src="/static/images/Teachers.png/" alt="">
+                        <img src="/static/images/Teachers.png/" alt="Teachers Icon">
                     </div>
                 </div>
                 <div class="card">
@@ -79,7 +160,7 @@
                         <h2>Timetable</h2>
                     </div>
                     <div class="icon-case">
-                        <img src="/static/images/Timetable.png/" alt="">
+                        <img src="/static/images/Timetable.png/" alt="Timetable Icon">
                     </div>
                 </div>
                 <div class="card">
@@ -87,25 +168,209 @@
                         <h2>Attendance</h2>
                     </div>
                     <div class="icon-case">
-                        <img src="/static/images/Attendance.png/" alt="">
+                        <img src="/static/images/Attendance.png/" alt="Attendance Icon">
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <script>
+        // Basic dropdown functionality (if any dropdowns are present in the side-menu)
+        document.addEventListener("DOMContentLoaded", function () {
+            let dropdown = document.querySelector(".dropdown");
+            let submenu = document.querySelector(".submenu");
+
+            if (dropdown) {
+                dropdown.addEventListener("click", function (event) {
+                    event.stopPropagation(); // Prevent click from closing immediately
+                    if (submenu) {
+                        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+                    }
+                });
+            }
+
+            // Close dropdown if clicked outside
+            document.addEventListener("click", function () {
+                if (submenu) {
+                    submenu.style.display = "none";
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Botpress Chatbot Integration
+        window.addEventListener('load', () => {
+            const chatbotContainer = document.getElementById('chatbot-container-student');
+            if (chatbotContainer) {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.botpress.cloud/webchat/v2.1/inject.js';
+                script.onload = () => {
+                    const configScript = document.createElement('script');
+                    configScript.src = 'https://mediafiles.botpress.cloud/c1ff1dd5-1517-4492-bcca-52139fea2afb/webchat/v2.1/config.js';
+                    configScript.onload = () => {
+                        // Botpress is initialized. No direct action needed here, it handles its own rendering.
+                    };
+                    configScript.onerror = (error) => {
+                        console.error('Error loading Botpress config:', error);
+                        chatbotContainer.innerHTML = '<p style="color:red">Failed to load chatbot configuration.</p>';
+                    };
+                    document.body.appendChild(configScript);
+                };
+                script.onerror = (error) => {
+                    console.error('Error loading Botpress Webchat:', error);
+                    chatbotContainer.innerHTML = '<p style="color:red">Failed to load chatbot.</p>';
+                };
+                document.body.appendChild(script);
+            }
+        });
+
+        // Notification Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationArea = document.getElementById('notification-area');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+            const notificationList = document.getElementById('notification-list'); // Container for multiple notifications
+            const clearNotificationButton = document.getElementById('clear-notification-button');
+
+            // Keys for localStorage, must match the admin panel
+            const TIMETABLE_UPDATED_KEY = 'timetableUpdatedSemesters';
+            // Removed NOTIFICATION_SEEN_PREFIX as we're simplifying the "seen" logic
+            const TIMETABLE_CHANGE_COUNTS_KEY = 'timetableChangeCounts';
+
+            /**
+             * Retrieves the array of updated semesters from localStorage.
+             * This array now directly represents "unseen" notifications.
+             * @returns {Array<string>} An array of semester identifiers (as strings).
+             */
+            function getUpdatedSemesters() {
+                const updatedSemestersStr = localStorage.getItem(TIMETABLE_UPDATED_KEY);
+                try {
+                    const parsedSemesters = updatedSemestersStr ? JSON.parse(updatedSemestersStr) : [];
+                    // Ensure all semester IDs are strings for consistency
+                    return parsedSemesters.map(String);
+                } catch (e) {
+                    console.error("Error parsing updated semesters from localStorage:", e);
+                    return [];
+                }
+            }
+
+            /**
+             * Retrieves the object mapping semesters to their change counts from localStorage.
+             * @returns {Object} An object where keys are semester IDs (strings) and values are change counts.
+             */
+            function getTimetableChangeCounts() {
+                const changeCountsStr = localStorage.getItem(TIMETABLE_CHANGE_COUNTS_KEY);
+                try {
+                    const parsedCounts = changeCountsStr ? JSON.parse(changeCountsStr) : {};
+                    // Ensure keys are strings
+                    const stringifiedCounts = {};
+                    for (const key in parsedCounts) {
+                        stringifiedCounts[String(key)] = parsedCounts[key];
+                    }
+                    return stringifiedCounts;
+                } catch (e) {
+                    console.error("Error parsing timetableChangeCounts from localStorage:", e);
+                    return {};
+                }
+            }
+
+            /**
+             * Returns the list of notifications to display.
+             * With the new approach, this is simply the list of updated semesters.
+             * @returns {Array<{semester: string, changes: number}>} An array of notification objects.
+             */
+            function getNotificationsToDisplay() {
+                const updatedSemesters = getUpdatedSemesters();
+                const changeCounts = getTimetableChangeCounts();
+
+                return updatedSemesters.map(semester => ({
+                    semester: semester,
+                    changes: changeCounts[semester] || 0 // Default to 0 if no count found
+                }));
+            }
+
+            /**
+             * Updates the notification badge count based on the number of notifications to display.
+             */
+            function updateNotificationBadge() {
+                const notifications = getNotificationsToDisplay();
+                const unseenCount = notifications.length;
+                console.log("Student Panel: Notifications to display count:", unseenCount);
+                if (unseenCount > 0) {
+                    notificationBadge.textContent = unseenCount;
+                    notificationBadge.style.display = 'inline-block'; // Show the badge
+                    console.log("Student Panel: Notification badge set to display 'inline-block'.");
+                } else {
+                    notificationBadge.style.display = 'none'; // Hide the badge
+                    console.log("Student Panel: Notification badge set to display 'none'.");
+                }
+            }
+
+            /**
+             * Displays the notification dropdown with all current timetable update messages.
+             */
+            function showNotificationDropdown() {
+                notificationList.innerHTML = ''; // Clear previous notifications in the dropdown
+                const notifications = getNotificationsToDisplay();
+
+                console.log("Student Panel: Notifications (for display in dropdown):", notifications);
+
+                if (notifications.length > 0) {
+                    notifications.forEach(notification => {
+                        const message = document.createElement('p');
+                        message.textContent = `Timetable updated for Semester ${notification.semester})`;
+                        message.id = `notification-message-${notification.semester}`;
+                        notificationList.appendChild(message);
+                    });
+                    notificationDropdown.style.display = 'block'; // Show the dropdown
+                } else {
+                    notificationDropdown.style.display = 'none';
+                }
+            }
+
+            /**
+             * Marks all current notifications as seen by clearing the updated semesters list.
+             * Also clears the associated change counts.
+             */
+            function clearAllNotifications() {
+                // Clear the list of updated semesters directly
+                localStorage.removeItem(TIMETABLE_UPDATED_KEY);
+                console.log("Student Panel: Cleared TIMETABLE_UPDATED_KEY.");
+
+                // Optionally, reset change counts for all semesters as they are now "seen"
+                // For a more professional approach, we might keep historical counts or clear only specific ones.
+                // For simplicity here, we'll clear all counts once all notifications are dismissed.
+                localStorage.removeItem(TIMETABLE_CHANGE_COUNTS_KEY);
+                console.log("Student Panel: Cleared TIMETABLE_CHANGE_COUNTS_KEY.");
+                
+                notificationDropdown.style.display = 'none'; // Hide dropdown
+                updateNotificationBadge(); // Update badge after clearing
+                console.log("Student Panel: All notifications cleared.");
+            }
+
+            // Event listener for the notification icon click
+            notificationIcon.addEventListener('click', function() {
+                showNotificationDropdown();
+            });
+
+            // Event listener for the "Okay" button in the dropdown
+            clearNotificationButton.addEventListener('click', clearAllNotifications);
+
+            // --- Initial Call on Page Load ---
+            console.log("Student Panel: DOMContentLoaded - Initiating notification check.");
+            console.log("Student Panel: Raw TIMETABLE_UPDATED_KEY from localStorage on load:", localStorage.getItem(TIMETABLE_UPDATED_KEY));
+            console.log("Student Panel: Raw TIMETABLE_CHANGE_COUNTS_KEY from localStorage on load:", localStorage.getItem(TIMETABLE_CHANGE_COUNTS_KEY));
+            updateNotificationBadge();
+            console.log("Student Panel: Notification badge final display style on load:", notificationBadge.style.display);
+
+
+            // Optional: Periodically check for updates if the student panel stays open for a long time.
+            // This would make it "real-time-ish" without a page refresh.
+            // setInterval(updateNotificationBadge, 5000); // Check every 5 seconds (adjust interval as needed)
+        });
+    </script>
 </body>
-</html>   
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-    let dropdown = document.querySelector(".dropdown");
-    let submenu = document.querySelector(".submenu");
-
-    dropdown.addEventListener("click", function (event) {
-        event.stopPropagation();
-        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
-    });
-
-    document.addEventListener("click", function () {
-        submenu.style.display = "none";
-    });
-});
-
-</script>         
+</html>

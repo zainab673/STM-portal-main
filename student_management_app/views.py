@@ -1,24 +1,29 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
-from .models import UserProfile, Teacher  # Import the Teacher model
-from django.http import HttpResponseRedirect
+from .models import UserProfile, Teacher, StudentProfile  # Import StudentProfile
+from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
-from .models import Timetable
+from .models import Timetable, ContactMessage, Notification
 from openpyxl import Workbook
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, JsonResponse
 import os
 from django.conf import settings
 import platform
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_protect  # Correct import
+from django.views.decorators.csrf import csrf_protect
 import json
 import requests
-from django.http import JsonResponse
-from .models import ContactMessage
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, F
 from django.db.models.functions import Length
-from .forms import TeacherForm  # You'll need to create this form
+from .forms import TeacherForm, StudentProfileForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
+import logging
+from django.db.models import Case, When, Value, IntegerField
+
+logger = logging.getLogger(__name__)
 
 # Hardcoded verification codes for each role
 VERIFICATION_CODES = {
@@ -37,7 +42,6 @@ def index(request):
         print(f"Role stored in session: {role}")
         return redirect('signup')  # Redirect to signup page
     return render(request, 'index.html')
-
 
 
 def login_view(request):
@@ -93,7 +97,6 @@ def login_view(request):
     return render(request, 'login.html', {'role': role})
 
 
-
 def signup_view(request):
     print(f"🔍 Session Data: {dict(request.session)}")
     role = request.session.get('role', None)
@@ -120,11 +123,11 @@ def signup_view(request):
         # Check if the verification code is correct
         if verification_code != expected_code:
             print("Invalid verification code!")
-            messages.error(request, 'Invalid verification code! Please enter the correct code.')  # Error message
+            messages.error(request, 'Invalid verification code! Please enter the correct code.')
             return render(request, 'signup.html', {'role': role})
 
         if UserProfile.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists. Please choose another one.')  # Error for existing username
+            messages.error(request, 'Username already exists. Please choose another one.')
             return render(request, 'signup.html', {'role': role})
 
         # Create user and assign role
@@ -134,20 +137,17 @@ def signup_view(request):
             user.save()
             print(f"User {username} created successfully!")
 
-             # After signup, log the user in
-            login(request, user)
-            print(f"🔍 User {user.username} logged in with ID: {request.session.get('_auth_user_id')}")
-            print(f"🔍 Role assigned: {user.role}")
-            messages.success(request, '🎉 Account created successfully!')
-
             if role == 'teacher':
-                Teacher.objects.create(user=user, verification_code=verification_code)  # Create Teacher record
+                Teacher.objects.create(user=user, verification_code=verification_code)
                 print(f"Teacher profile created for user: {username}")
+            elif role == 'student':
+                StudentProfile.objects.create(user=user, semester=1)
+                print(f"Student profile created for user: {username}")
         except Exception as e:
-             messages.error(request, f'An error occurred during signup: {e}')
-             return render(request, 'signup.html', {'role': role})
+            messages.error(request, f'An error occurred during signup: {e}')
+            return render(request, 'signup.html', {'role': role})
 
-        # After signup, log the user in
+        # After successful user creation and profile creation
         login(request, user)
         print(f"🔍 User {username} logged in with ID: {request.session.get('_auth_user_id')}")
         print(f"🔍 Role assigned: {user.role}")
@@ -164,10 +164,8 @@ def signup_view(request):
     return render(request, 'signup.html', {'role': role})
 
 
-
 def student_panel(request):
     return render(request, "studentpanel.html")
-
 
 
 def teacher_panel(request):
@@ -184,9 +182,10 @@ def admin_panel(request):
     return render(request, "adminpanel.html", context)
 
 
-
 def select_semester(request):
     return render(request, 'selectsem.html')
+
+
 # EXCEL SHEET FOR ATTENDANCE
 def open_attendance(request):
     if request.method == "POST":
@@ -239,73 +238,6 @@ def open_attendance(request):
         return HttpResponse("File created. Please open it manually (non-Windows system).")
 
     return HttpResponse("Invalid request method.")
-# TIMETABLE FOR ALL SEMESTERS
-def timetable_view(request):
-    semester = request.GET.get('semester', '1')  # Default to Semester 1 if nothing is passed
-
-    # Query the database to get the timetable for the selected semester
-    timetable = Timetable.objects.filter(semester=semester)
-
-    # Pass the timetable data to the template
-    context = {
-        'semester': semester,
-        'timetable': timetable
-    }
-
-    return render(request, 'timetable.html', context)
-
-
-def show_timetable(request, semester):
-    timetable = Timetable.objects.filter(semester=semester).order_by('day', 'timing')
-    return render(request, 'timetable.html', {
-        'timetable': timetable,
-        'semester': semester,
-    })
-# Edit Timetable
-def edit_timetable(request, lecture_id):
-    # Get the lecture object to edit
-    lecture = get_object_or_404(Timetable, id=lecture_id)
-
-    if request.method == 'POST':
-        subject = request.POST.get('subject')
-        instructor = request.POST.get('instructor')
-        timing = request.POST.get('timing')
-        classroom = request.POST.get('classroom')
-
-        if not subject or not instructor or not timing or not classroom:
-            return render(request, 'edit_timetable.html', {
-                'lecture': lecture,
-                'semester': lecture.semester,
-                'error_message': 'All fields are required.'
-            })
-
-        # Update
-        lecture.subject = subject
-        lecture.instructor = instructor
-        lecture.timing = timing
-        lecture.classroom = classroom
-        lecture.save()
-
-        return redirect('show_timetable', semester=lecture.semester)
-
-    return render(request, 'edit_timetable.html', {
-        'lecture': lecture,
-        'semester': lecture.semester
-    })
-# Delete Timetable
-def delete_timetable(request, lecture_id):
-    # Get the lecture object to delete
-    lecture = get_object_or_404(Timetable, id=lecture_id)
-
-    if request.method == 'POST':
-        semester = lecture.semester  # save before deleting
-        lecture.delete()
-        return redirect('show_timetable', semester=semester)
-
-    return render(request, 'delete_timetable.html', {
-        'lecture': lecture,
-        'semester': lecture.semester
-    })
 
 
 def chatbot(request):
@@ -319,7 +251,8 @@ def chatbot(request):
             headers = {
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost:8000/",  # If you are testing locally
+                "HTTP-Referer": "http://localhost:8000/",
+                # If you are testing locally
                 "X-Title": "Scholar Sphere Chatbot"  # Your project title
             }
 
@@ -349,6 +282,8 @@ def chatbot(request):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+
 def submit_contact_form(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -364,7 +299,6 @@ def submit_contact_form(request):
         return redirect('index')
 
 
-
 def read_message(request, message_id):
     message = get_object_or_404(ContactMessage, id=message_id)
     message.is_read = True
@@ -378,16 +312,7 @@ def delete_message(request, message_id):
         message = get_object_or_404(ContactMessage, id=message_id)
         message.delete()
     return redirect('admin_panel')
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Teacher
-from .forms import TeacherForm  # You'll need to create this form
 
-from django.core.paginator import Paginator
-from django.shortcuts import render
-from django.db.models import Q, F, Value, Case, When, IntegerField  # Import When as well
-from django.db.models.functions import Length
-from .models import Teacher
-from .forms import TeacherForm
 
 def teacher_list(request):
     teachers = Teacher.objects.all()
@@ -401,16 +326,24 @@ def teacher_list(request):
             Q(subject_taught__icontains=search_term) |
             Q(department__icontains=search_term)
         )
-        # Annotate with a 'relevance' score.  Prioritize username matches.
+        # Annotate with a 'relevance' score. Prioritize username matches.
         teachers = teachers.annotate(
             relevance=Case(
-                When(user__username__icontains=search_term, then=Value(10)),  # High priority
-                When(user__email__icontains=search_term, then=Value(5)),      # Medium priority
+                When(user__username__icontains=search_term, then=Value(10)),
+                # High priority
+                When(user__email__icontains=search_term, then=Value(5)),
+                # Medium priority
                 default=Value(1),
                 output_field=IntegerField(),
             ),
             name_length=Length('user__username')
-        ).order_by('-relevance', 'name_length')
+        ).order_by('-relevance',
+                     'name_length')  # Important: Order by relevance and then name_length
+    else:
+        teachers = teachers.annotate(
+            relevance=Value(0, output_field=IntegerField()),
+            name_length=Length('user__username')
+        )
 
     # Sorting
     sort_by = request.GET.get('sort')
@@ -421,8 +354,16 @@ def teacher_list(request):
             teachers = teachers.order_by('user__email')
         elif sort_by == 'department':
             teachers = teachers.order_by('department')
+        elif sort_by == 'cnic':
+            teachers = teachers.order_by('cnic')
+        elif sort_by == 'contact_number':
+            teachers = teachers.order_by('contact_number')
+        elif sort_by == 'subject_taught':
+            teachers = teachers.order_by('subject_taught')
         else:
-            teachers = teachers.order_by('id')  # Default ordering
+            teachers = teachers.order_by('pk')  # Default to primary key if sort is invalid
+    else:
+        teachers = teachers.order_by('pk')  # Default ordering
 
     # Pagination
     paginator = Paginator(teachers, 10)
@@ -436,6 +377,7 @@ def teacher_list(request):
     }
     return render(request, 'admin_teachers.html', context)
 
+
 def teacher_edit(request, teacher_id):
     teacher = get_object_or_404(Teacher, pk=teacher_id)
     if request.method == 'POST':
@@ -447,15 +389,6 @@ def teacher_edit(request, teacher_id):
         form = TeacherForm(instance=teacher)
     return render(request, 'admin_teacher_form.html', {'form': form, 'teacher': teacher})
 
-
-import logging
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Teacher
-from django.contrib import messages
-from django.urls import reverse
-from django.http import Http404
-
-logger = logging.getLogger(__name__)
 
 def teacher_delete(request, pk):
     try:
@@ -473,3 +406,276 @@ def teacher_delete(request, pk):
         logger.error(f"Teacher with pk={pk} not found for deletion.")
         messages.error(request, "Deleted Successfully.")
         return redirect(reverse('teacher_list'))
+
+
+@login_required
+def teacher_dashboard(request):
+    context = {
+        'is_admin': False,
+    }
+    return render(request, 'teacher_dashboard.html', context)
+
+
+@login_required
+def student_dashboard(request):
+    context = {
+        'is_admin': False,
+    }
+    return render(request, 'student_dashboard.html', context)
+
+
+@login_required
+def admin_dashboard(request):
+    is_admin = False
+    if request.user.is_superuser or request.user.groups.filter(
+            name='Admin').exists():
+        is_admin = True
+    context = {
+        'is_admin': is_admin,
+    }
+    return render(request, 'admin_dashboard.html', context)
+
+
+@login_required
+def admin_timetable(request):
+    is_admin = False
+    if request.user.is_superuser or request.user.groups.filter(
+            name='Admin').exists():
+        is_admin = True
+    context = {
+        'is_admin': is_admin,
+        'timetable': Timetable.objects.all()  # Or filter it as needed
+    }
+    print(f"Admin Timetable Context: {context}")  # Add this line
+    return render(request, 'timetable.html', context)
+
+
+@login_required
+def teacher_timetable(request):
+    context = {
+        'is_admin': False,
+        'timetable': Timetable.objects.all()  # Or filter for the teacher's classes
+    }
+    return render(request, 'timetable.html', context)
+
+
+@login_required
+def student_timetable(request):
+    context = {
+        'is_admin': False,
+        'timetable': Timetable.objects.all()  # Or filter for student's classes
+    }
+    return render(request, 'timetable.html', context)
+# student_management_app/views.py
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Timetable
+
+
+@login_required
+def admin_timetable(request):
+    context = {
+        'timetable': Timetable.objects.all()
+    }
+    return render(request, 'timetable.html', context)
+
+
+@login_required
+def teacher_timetable(request):
+    context = {
+        'timetable': Timetable.objects.all()  # Or filter as needed
+    }
+    return render(request, 'timetable.html', context)
+
+
+@login_required
+def student_timetable(request):
+    context = {
+        'timetable': Timetable.objects.all()  # Or filter as needed
+    }
+    return render(request, 'timetable.html', context)
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Timetable, Teacher, Notification
+from django.http import JsonResponse
+
+
+# ... your existing admin timetable view ...
+
+@user_passes_test(lambda u: u.is_superuser)  # Example: Only admin can save timetable
+def save_timetable_view(request):
+    if request.method == 'POST':
+        # ... your logic to save the timetable ...
+        # After saving, identify affected teachers and create notifications
+        affected_teachers = Teacher.objects.filter(
+            subject_taught__in=[])  # Example: Filter teachers by taught subjects
+        semester = request.POST.get('semester')  # Example: Get the affected semester
+
+        for teacher in affected_teachers:
+            Notification.objects.create(
+                user=teacher.user,
+                message=f"Timetable updated for Semester {semester}.",
+                related_semester=int(semester) if semester else None
+            )
+        # Optionally send a real-time notification using Django Channels
+
+        return JsonResponse(
+            {'success': True, 'message': 'Timetable saved and notifications sent.'})
+    # ... handle GET request ...
+
+
+@login_required
+def get_notifications(request):
+    unread_notifications = Notification.objects.filter(
+        user=request.user, is_read=False)
+    notifications_data = [{
+        'message': n.message,
+        'timestamp': n.timestamp.strftime('%Y-%m-%d %H:%M'),
+        'related_semester': n.related_semester
+    } for n in unread_notifications]
+    return JsonResponse({
+        'unread_count': unread_notifications.count(),
+        'notifications': notifications_data
+    })
+
+
+@login_required
+def mark_notifications_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(user=request.user,
+                                    is_read=False).update(is_read=True)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+from django.shortcuts import render
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
+from .models import StudentProfile
+from django.shortcuts import render
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
+from .models import StudentProfile
+
+
+def student_list(request):  # Make sure this function exists and is named correctly
+    students = StudentProfile.objects.all()
+    search_term = request.GET.get('search')
+    sort_by = request.GET.get('sort')
+
+    if search_term:
+        students = students.filter(
+            Q(user__username__icontains=search_term) |
+            Q(user__email__icontains=search_term) |
+            Q(cnic__icontains=search_term) |
+            Q(contact_number__icontains=search_term)
+        )
+
+    if sort_by:
+        if sort_by == 'user__username':
+            students = students.order_by('user__username')
+        elif sort_by == 'user__email':
+            students = students.order_by('user__email')
+        elif sort_by == 'semester':
+            students = students.order_by('semester')
+        elif sort_by == 'contact_number':
+            students = students.order_by('contact_number')
+        elif sort_by == 'cnic':
+            students = students.order_by('cnic')
+        else:
+            students = students.order_by('pk')  # default sort
+    else:
+        students = students.order_by('pk')
+
+    paginator = Paginator(students, 10)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    context = {
+        'page_obj': page_obj,
+        'search_term': search_term,
+        'sort_by': sort_by,
+    }
+    return render(request, 'admin_students.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from .forms import StudentProfileForm
+from .models import UserProfile, StudentProfile
+
+
+def student_edit(request, pk):
+    user = get_object_or_404(UserProfile, pk=pk)
+    student_profile = StudentProfile.objects.get(user=user)
+    if request.method == 'POST':
+        form = StudentProfileForm(request.POST, instance=student_profile)
+        if form.is_valid():
+            form.save()
+            #  messages.success(request, f"{user.username}'s profile updated successfully!") # Removed import
+            return redirect('student_list')
+    else:
+        form = StudentProfileForm(instance=student_profile)
+    return render(request, 'admin_students_form.html',
+                  {'form': form, 'student': user})
+
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin')
+def student_delete(request, pk):
+    try:
+        user_to_delete = get_object_or_404(UserProfile, pk=pk)
+        username = user_to_delete.username
+        user_to_delete.delete()
+        messages.success(request, f"Student '{username}' deleted successfully!")
+        return redirect('student_list')
+    except Http404:
+        messages.error(request, "Student not found!")
+        return redirect('student_list')
+# student_management_app/views.py
+
+from django.shortcuts import render
+# You might have other imports here, e.g., for models, forms, etc.
+# from .models import Teacher, Course, Assignment # Example if you use Django ORM
+
+def admin_courses(request):
+    """
+    Renders the page for managing teacher courses.
+    This view will serve the HTML content that uses Firestore for data management.
+    """
+    # In a real Django application, you might fetch initial data from your Django models
+    # and pass it to the template context if needed.
+    # For this Firestore-based page, most data loading happens on the client-side.
+
+    # Example of passing context (optional, adjust as per your Django setup)
+    context = {
+        'page_title': 'Manage Teacher Courses',
+        # 'teachers_data': Teacher.objects.all(), # Example if fetching from Django DB
+    }
+    return render(request, 'Manage_Teacher_Courses.html', context)
+
+# Add other view functions you might have here, e.g.:
+# def student_list(request):
+#     return render(request, 'student_list.html')
+
+# def teacher_list(request):
+#     return render(request, 'teacher_list.html')
+
+# def admin_timetable(request):
+#     return render(request, 'admin_timetable.html')
+
+# def delete_message(request, message_id):
+#     # Implement your message deletion logic here
+#     # This would typically involve interacting with your Django models
+#     # For now, a placeholder response:
+#     from django.http import JsonResponse
+#     if request.method == 'POST':
+#         # Simulate deletion success
+#         return JsonResponse({'status': 'success', 'message': f'Message {message_id} deleted.'})
+#     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+
+

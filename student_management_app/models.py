@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.conf import settings  # Import settings for AUTH_USER_MODEL
 
 # Custom User Model
 class UserProfile(AbstractUser):
@@ -29,34 +30,52 @@ class Course(models.Model):
     ]
     course_name = models.CharField(max_length=100, default="Untitled Course")
     course_code = models.CharField(max_length=100, unique=True, default='CS101')
-
-    teacher = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, limit_choices_to={'role': 'teacher'})
+    teacher = models.ForeignKey(
+        UserProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        limit_choices_to={'role': 'teacher'}
+    )
     semester_number = models.PositiveIntegerField(choices=SEMESTER_CHOICES, default=1)
 
     def __str__(self):
         return f"{self.course_name} ({self.course_code})"
 
-# Student Model
-class Students(models.Model):
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, limit_choices_to={'role': 'student'}, null=False)
-    semester_number = models.IntegerField(default=1)
-
+# Student Model (Changed to StudentProfile)
+class StudentProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='student_profile'  # Added related name
+    )
+    semester = models.IntegerField(
+        choices=[(i, f'Semester {i}') for i in range(1, 9)]
+    )
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    cnic = models.CharField(max_length=15, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} ({self.user.email})"
+        return self.user.username
+
 
 # Attendance Model
 class Attendance(models.Model):
-    student = models.ForeignKey(Students, on_delete=models.CASCADE)
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE) # Changed to StudentProfile
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     attendance_date = models.DateTimeField(default=timezone.now)
     status = models.BooleanField()  # True for present, False for absent
 
+    def __str__(self):
+        return f"Attendance of {self.student.user.username} for {self.course.course_name} on {self.attendance_date}"
+
+
 # Attendance Report Model (removed redundant semester_number)
 class AttendanceReport(models.Model):
-    student = models.ForeignKey(Students, on_delete=models.CASCADE)
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE) # Changed to StudentProfile
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     # Removed semester_number since it's already part of Course and Students models
+    def __str__(self):
+        return f"Report for {self.student.user.username} in {self.course.course_name}"
 
 # Timetable Model
 class Timetable(models.Model):
@@ -90,6 +109,7 @@ class Timetable(models.Model):
 
     def __str__(self):
         return f"{self.subject} - Semester {self.semester} ({self.day})"
+
     def clean(self):
         # Check if a class is already scheduled in the same classroom at the same time and day
         conflicting_timetable = Timetable.objects.filter(
@@ -99,7 +119,11 @@ class Timetable(models.Model):
         ).exclude(id=self.id)  # Exclude current instance if updating
 
         if conflicting_timetable.exists():
-            raise ValidationError(f"A class is already scheduled in {self.classroom} on {self.day} at {self.timing}.")
+            raise ValidationError(
+                f"A class is already scheduled in {self.classroom} on {self.day} at {self.timing}.")
+
+
+
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -109,17 +133,51 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
-    
-from django.db import models
-from .models import UserProfile 
 
+# Teacher Model
 class Teacher(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, primary_key=True)
     verification_code = models.CharField(max_length=100, blank=True, null=True)
-    cnic = models.CharField(max_length=15, blank=True, null=True) 
+    cnic = models.CharField(max_length=15, blank=True, null=True)
     subject_taught = models.CharField(max_length=100, blank=True, null=True)
     department = models.CharField(max_length=100, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return self.user.username
+
+
+# Notification Model
+class Notification(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    related_semester = models.IntegerField(
+        null=True, blank=True
+    )  # Optional: Semester the notification pertains to
+
+    def __str__(self):
+        return f"Notification for {self.user.username} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        ordering = ['-timestamp']  # Order by most recent first
+# student_management_app/models.py
+
+
+class Assignment(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    due_date = models.DateTimeField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='assignments')
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='assignments_given')
+    upload = models.FileField(upload_to='assignments/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
