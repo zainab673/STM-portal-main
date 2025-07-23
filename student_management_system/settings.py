@@ -79,17 +79,19 @@ WSGI_APPLICATION = 'student_management_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import os
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'scholar_sphere',  # Your database name
-        'USER': 'scholar_sphere',   # The user you just created
-        'PASSWORD': 's1a2m3r4e5',   # The password you set
-        'HOST': 'ZanibMalhi.mysql.pythonanywhere-services.com' ,       
-        'PORT':'',  
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST', 'db4free.net'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
     }
 }
+
 
 
 # Password validation
