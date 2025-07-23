@@ -1,0 +1,329 @@
+      /* Updated CSS for Students Side Menu */
+      #notifications-dropdown {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        background: #f8f8f8;
+        color: #333;
+        list-style: none;
+        padding: 5px 0;
+        margin: 0;
+        display: none;
+        z-index: 10;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        white-space: nowrap;
+        min-width: 350px;
+      }
+
+      #notifications-dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      #notifications-dropdown li {
+        padding: 8px 15px;
+        border-bottom: 1px solid #eee;
+        color: #333;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      #notifications-dropdown strong {
+        font-weight: bold;
+        color: #000;
+        font-size: 1.1em;
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      #notifications-dropdown span {
+        color: #555;
+        font-size: 0.9em;
+      }
+
+      #notifications-dropdown p {
+        color: #444;
+        margin-top: 5px;
+      }
+
+      #notifications-dropdown a {
+        color: blue;
+        text-decoration: none;
+      }
+
+      #notifications-dropdown a:hover {
+        text-decoration: underline;
+      }
+
+      #notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 5px 8px;
+        font-size: 0.8em;
+      }
+
+      /* You can also explicitly style the list items and other elements within */
+      #notifications-dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      #notifications-dropdown li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        color: #333;
+        /* Ensure list item text is also dark */
+      }
+
+      #notifications-dropdown strong {
+        font-weight: bold;
+        color: #000;
+        /* Make the sender's name even darker if desired */
+      }
+
+      #notifications-dropdown a {
+        color: blue;
+        text-decoration: none;
+      }
+
+      #notifications-dropdown a:hover {
+        text-decoration: underline;
+      }
+
+      #notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 5px 8px;
+        font-size: 0.8em;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      /* Side Menu */
+      .side-menu {
+        position: fixed;
+        background: #003366;
+        width: 20vw;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        z-index: 2; /* Ensure the side menu is above other elements */
+      }
+
+      /* FYP NAME */
+      .fyp-name {
+        color: white;
+      }
+
+      .side-menu .fyp-name {
+        height: 12vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Side Menu List */
+
+      .side-menu li {
+        font-size: 20px;
+        padding: 10px 40px;
+        color: white;
+        display: flex;
+        align-items: center;
+        list-style: none;
+      }
+
+      .side-menu ul li a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .side-menu li:hover {
+        background: white;
+        color: #003366;
+      }
+
+      /* Submenu Default Hidden */
+      .submenu {
+        position: absolute;
+        left: 0;
+        top: 100%;
+        background: #0055a5;
+        width: 100%;
+        list-style: none;
+      }
+
+      /* Submenu Items */
+      .submenu li {
+        color: white;
+        font-size: 16px;
+      }
+
+      /* Show Submenu on Click */
+      .dropdown:focus-within .submenu {
+        display: block;
+      }
+
+      /* Remove White Space Issue */
+      .dropdown {
+        position: relative;
+      }
+
+      /* Container */
+      .container {
+        position: absolute;
+        right: 0;
+        width: 80vw;
+        height: 100vh;
+        background: #f1f1f1;
+        overflow-y: auto; /* Add scrollbar to the container, not the body */
+      }
+
+      /* HEADER */
+      .container .header {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 80vw;
+        height: 10vh;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+
+      /* NAVIGATION BAR */
+      .container .header .nav {
+        width: 80%;
+        display: flex;
+        align-items: center;
+      }
+
+      /* SEARCH BAR */
+      .container .header .nav .search {
+        flex: 3;
+        display: flex;
+        justify-content: center;
+      }
+
+      .container .header .nav .search input[type=text] {
+        border: none;
+        background: #f1f1f1;
+        padding: 10px;
+        width: 50%;
+      }
+
+      /* SEARCH BUTTON IMAGE */
+      .container .header .nav .search button {
+        width: 40px;
+        height: 40px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container .header .nav .search button img {
+        width: 30px;
+        height: 30px;
+      }
+
+      /* NOTIFICATION IMAGE */
+      .container .header .nav .user img {
+        width: 40px;
+        height: 40px;
+      }
+
+      /* CONTENT */
+      .container .content {
+        position: relative;
+        margin-top: 10vh;
+        min-height: 90vh;
+        background: #f1f1f1;
+        padding-bottom: 70px; /* Add padding at the bottom for fixed chatbot */
+      }
+
+      .content h1 {
+        color: #003366;
+        text-align: center;
+        padding-top: 50px;
+        padding-bottom: 40px;
+      }
+
+      /* CARDS */
+      .container .content .cards {
+        padding: 20px 15px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(250px, 1fr));
+        gap: 20px;
+        margin-left: 10%;
+      }
+
+      .container .content .cards .card {
+        width: 285px;
+        height: 170px;
+        background: white;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+          0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      }
+
+      /* CARDS ICON */
+      .card .icon-case {
+        display: flex;
+        width: 150px;
+        height: 150px;
+      }
+
+      .card h2 {
+        margin-left: 10px;
+        color: #003366;
+      }
+
+      /* Botpress Chatbot Styles */
+      #chatbot-container {
+        position: fixed; /* Fix the chatbot container to the bottom */
+        bottom: 0;
+        left: 20vw; /* Align with the left edge of the content area */
+        width: 80vw; /* Match the content width */
+        height: auto; /* Adjust height as needed */
+        z-index: 3; /* Ensure it's above other content */
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent; /* Ensure the background doesn't interfere */
+      }
+
+      #chatbot-container iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 70vh; /* Ensure the iframe has a minimum height */
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      /* Ensure the body doesn't have overflow, the container will handle it */
+      body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }

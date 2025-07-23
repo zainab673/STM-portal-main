@@ -22,10 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--ot=pcfsva$m9c$+$e0pbv!^f7u85q4k&p8bqj0f=g^5@peqi4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['zanibmalhi.pythonanywhere.com', 'www.zanibmalhi.pythonanywhere.com']
 
 # Application definition
 
@@ -87,8 +86,8 @@ DATABASES = {
         'NAME': 'scholar_sphere',  # Your database name
         'USER': 'scholar_sphere',   # The user you just created
         'PASSWORD': 's1a2m3r4e5',   # The password you set
-        'HOST': 'localhost',
-        'PORT': '3306',              # Default MySQL port
+        'HOST': 'ZanibMalhi.mysql.pythonanywhere-services.com' ,       
+        'PORT':'',  
     }
 }
 
@@ -137,3 +136,7 @@ import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # This will create a 'staticfiles' folder at your project root level
