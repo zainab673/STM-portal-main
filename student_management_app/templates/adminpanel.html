@@ -6,6 +6,220 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/static/css/style1.css">
   <title>Admin Dashboard</title>
+  <style>
+    /* --- CSS for Botpress Chatbot (Admin Panel Specific) --- */
+    #chatbot-container-admin {
+        position: fixed;
+        bottom: 0;
+        left: 20vw;
+        width: 80vw;
+        height: auto;
+        z-index: 3;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    #chatbot-container-admin iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 70vh;
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* --- CSS for Notifications Dropdown (Admin Panel) - IMPROVED STYLING --- */
+    #notifications-dropdown {
+        display: none;
+        position: absolute;
+        background-color: #ffffff; /* White background */
+        min-width: 320px; /* Slightly wider for better content display */
+        box-shadow: 0px 8px 20px 0px rgba(0,0,0,0.15); /* Softer, larger shadow */
+        z-index: 1000;
+        right: 0;
+        top: 100%;
+        border-radius: 10px; /* More rounded corners */
+        padding: 15px; /* Increased padding */
+        margin-top: 12px; /* More space between icon and dropdown */
+        max-height: 450px; /* Increased max height */
+        overflow-y: auto;
+        border: 1px solid #e0e0e0; /* Lighter border */
+        box-sizing: border-box; /* Include padding/border in width calculation */
+    }
+
+    #notifications-container {
+        position: relative;
+    }
+
+    #notification-badge {
+        position: absolute;
+        top: -8px; /* Adjusted position */
+        right: -8px; /* Adjusted position */
+        background-color: #dc3545; /* Red */
+        color: white;
+        border-radius: 50%;
+        padding: 3px 8px; /* Slightly larger padding */
+        font-size: 0.8em; /* Slightly larger font */
+        line-height: 1;
+        min-width: 18px; /* Ensure it's a circle even with single digit */
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Small shadow for the badge */
+    }
+
+    .unread-message-item {
+        background-color: #f8f8f8; /* Light background for each message */
+        border: 1px solid #eee; /* Light border for separation */
+        border-radius: 8px; /* Rounded corners for message items */
+        padding: 12px 15px; /* Generous padding */
+        margin-bottom: 10px; /* Space between messages */
+        display: flex;
+        flex-direction: column;
+        gap: 8px; /* More space between elements inside the message */
+        transition: background-color 0.2s ease, transform 0.1s ease; /* Smooth hover effect */
+    }
+
+    .unread-message-item:last-child {
+        margin-bottom: 0; /* No margin after the last message */
+    }
+
+    .unread-message-item:hover {
+        background-color: #f0f0f0; /* Slight highlight on hover */
+        transform: translateY(-2px); /* Subtle lift on hover */
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px; /* Space between name/email and delete button */
+    }
+
+    .message-sender-info {
+        flex-grow: 1; /* Allow sender info to take up available space */
+    }
+
+    .unread-message-item strong {
+        color: #212529; /* Darker color for name */
+        font-size: 1em; /* Standard font size */
+        margin-right: 5px; /* Space between name and email */
+    }
+
+    .unread-message-item span {
+        font-size: 0.8em; /* Smaller for email */
+        color: #6c757d; /* Muted color for email */
+    }
+
+    .unread-message-item p {
+        margin: 0; /* Remove default paragraph margin */
+        line-height: 1.6; /* Improved line spacing */
+        color: #495057; /* Standard text color */
+        font-size: 0.9em; /* Slightly smaller for message content */
+    }
+
+    .unread-message-item .short-message,
+    .unread-message-item .full-message {
+        white-space: pre-wrap; /* Preserve whitespace and allow wrapping */
+        word-wrap: break-word; /* Ensure long words break */
+    }
+
+    .read-more-link, .read-less-link {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 0.85em; /* Slightly smaller for links */
+        cursor: pointer;
+        display: inline-block; /* Ensure it sits nicely with text */
+        margin-left: 5px; /* Space from content */
+    }
+
+    .read-more-link:hover, .read-less-link:hover {
+        text-decoration: underline;
+        color: #0056b3; /* Darker blue on hover */
+    }
+
+    .unread-message-item form {
+        align-self: flex-end;
+        margin-top: 5px; /* Keep some space */
+    }
+
+    .unread-message-item button {
+        background-color: #007bff; /* Red */
+        color: white;
+        border: none;
+        padding: 7px 14px; /* Increased padding */
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.8em; /* Slightly smaller font for button */
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        text-transform: uppercase; /* Make button text uppercase */
+        letter-spacing: 0.5px;
+    }
+
+    .unread-message-item button:hover {
+        background-color: #007bff;
+        transform: translateY(-1px);
+    }
+
+    #notifications-dropdown h3 {
+        margin-top: 0;
+        margin-bottom: 15px; /* More space below heading */
+        color: #343a40; /* Darker heading color */
+        font-size: 1.2em; /* Slightly larger heading */
+        text-align: center;
+        border-bottom: 1px solid #eee; /* Subtle separator */
+        padding-bottom: 10px;
+    }
+
+    #notifications-dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #notifications-dropdown p.no-messages { /* Style for "No new messages." */
+        padding: 15px 0;
+        color: #777;
+        text-align: center;
+        font-style: italic;
+    }
+
+    #notifications-dropdown a[href="#"] { /* "View All Messages" link */
+        display: block;
+        text-align: center;
+        padding-top: 15px;
+        border-top: 1px solid #e0e0e0; /* Lighter separator */
+        margin-top: 15px;
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.2s ease;
+    }
+
+    #notifications-dropdown a[href="#"]:hover {
+        text-decoration: underline;
+        color: #0056b3;
+    }
+
+    /* Scrollbar styling for dropdown */
+    #notifications-dropdown::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #notifications-dropdown::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    #notifications-dropdown::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    #notifications-dropdown::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+  </style>
 </head>
 <body>
   <div class="side-menu">
@@ -32,7 +246,7 @@
         <div class="search"></div>
         <div class="user" id="notifications-container">
           <div style="position: relative;">
-            <img src="/static/images/notifications.png/" alt="" id="notifications-icon" style="cursor: pointer;">
+            <img src="/static/images/notifications.png/" alt="Notifications" id="notifications-icon" style="cursor: pointer; width: 30px; height: 30px;">
             {% if unread_messages_count > 0 %}
               <span id="notification-badge">{{ unread_messages_count }}</span>
             {% endif %}
@@ -43,24 +257,26 @@
               <ul>
                 {% for message in unread_messages %}
                   <li class="unread-message-item">
-                    <div>
-                      <strong>{{ message.name }}</strong>
-                      <span>({{ message.email }})</span><br>
-                      <p class="short-message">{{ message.message|truncatechars:80 }} <a href="#" class="read-more-link" data-message-id="{{ message.id }}">Read More</a></p>
-                      <p class="full-message" style="display: none;">{{ message.message }} <a href="#" class="read-less-link" data-message-id="{{ message.id }}">Read Less</a></p>
+                    <div class="message-header">
+                        <div class="message-sender-info">
+                            <strong>{{ message.name }}</strong>
+                            <span>({{ message.email }})</span>
+                        </div>
+                        <form method="post" action="{% url 'delete_message' message.id %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" title="Delete Message">Delete</button>
+                        </form>
                     </div>
-                    <form method="post" action="{% url 'delete_message' message.id %}">
-                      {% csrf_token %}
-                      <button type="submit">Delete</button>
-                    </form>
+                    <p class="short-message">{{ message.message|truncatechars:80 }} {% if message.message|length > 80 %}<a href="#" class="read-more-link" data-message-id="{{ message.id }}">Read More</a>{% endif %}</p>
+                    <p class="full-message" style="display: none;">{{ message.message }} {% if message.message|length > 80 %}<a href="#" class="read-less-link" data-message-id="{{ message.id }}">Read Less</a>{% endif %}</p>
                   </li>
                 {% empty %}
-                  <li>No new messages.</li>
+                  <p class="no-messages">No new messages.</p>
                 {% endfor %}
               </ul>
               <a href="#">View All Messages</a>
             {% else %}
-              <p>No new messages.</p>
+              <p class="no-messages">No new messages.</p>
             {% endif %}
           </div>
         </div>
@@ -69,7 +285,7 @@
 
     <div class="content">
       <h1> Welcome to the Admin Dashboard </h1>
-      <div id="chatbot-container"></div>
+      <div id="chatbot-container-admin"></div>
       <div class="cards">
         <div class="card"><div class="box"><h2>Students</h2></div><div class="icon-case"><img src="/static/images/Students.png/" alt=""></div></div>
         <div class="card"><div class="box"><h2>Teacher</h2></div><div class="icon-case"><img src="/static/images/Teachers.png/" alt=""></div></div>
@@ -81,19 +297,86 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const toggle = document.getElementById("manage-courses-toggle");
-      const submenu = toggle.nextElementSibling;
+      // --- Sidebar Dropdown Toggle ---
+      const manageCoursesDropdownLi = document.querySelector(".side-menu ul li.dropdown:last-child");
+      if (manageCoursesDropdownLi) {
+        const submenu = manageCoursesDropdownLi.querySelector("ul");
+        if (submenu) {
+          const toggleLink = manageCoursesDropdownLi.querySelector("a");
 
-      toggle.addEventListener("click", function (e) {
-        e.preventDefault();
-        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
-      });
+          toggleLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+          });
 
-      document.addEventListener("click", function (e) {
-        if (!toggle.contains(e.target) && !submenu.contains(e.target)) {
-          submenu.style.display = "none";
+          document.addEventListener("click", function (e) {
+            if (!manageCoursesDropdownLi.contains(e.target)) {
+              submenu.style.display = "none";
+            }
+          });
         }
+      }
+
+      // --- Notifications Dropdown Logic ---
+      const notificationsIcon = document.getElementById("notifications-icon");
+      const notificationsDropdown = document.getElementById("notifications-dropdown");
+
+      if (notificationsIcon && notificationsDropdown) {
+        notificationsIcon.addEventListener("click", function (event) {
+          event.stopPropagation();
+          notificationsDropdown.style.display = notificationsDropdown.style.display === "block" ? "none" : "block";
+        });
+
+        document.addEventListener("click", function (event) {
+          if (!notificationsIcon.contains(event.target) && !notificationsDropdown.contains(event.target)) {
+            notificationsDropdown.style.display = "none";
+          }
+        });
+      }
+
+      // --- Read More/Read Less Logic for Notification Messages ---
+      document.querySelectorAll('.read-more-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const parentLi = this.closest('li');
+          parentLi.querySelector('.short-message').style.display = 'none';
+          parentLi.querySelector('.full-message').style.display = 'block';
+        });
       });
+
+      document.querySelectorAll('.read-less-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const parentLi = this.closest('li');
+          parentLi.querySelector('.full-message').style.display = 'none';
+          parentLi.querySelector('.short-message').style.display = 'block';
+        });
+      });
+
+      // --- Botpress Chatbot Integration (Modified for Admin Panel) ---
+      const chatbotContainerAdmin = document.getElementById('chatbot-container-admin');
+
+      if (chatbotContainerAdmin) {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.botpress.cloud/webchat/v2.1/inject.js';
+          script.onload = () => {
+              const configScript = document.createElement('script');
+              configScript.src = 'https://mediafiles.botpress.cloud/c1ff1dd5-1517-4492-bcca-52139fea2afb/webchat/v2.1/config.js';
+              configScript.onload = () => {
+                  console.log('Botpress config loaded for admin panel.');
+              };
+              configScript.onerror = (error) => {
+                  console.error('Error loading Botpress config for admin:', error);
+                  chatbotContainerAdmin.innerHTML = '<p style="color:red; text-align: center;">Failed to load chatbot configuration.</p>';
+              };
+              document.body.appendChild(configScript);
+          };
+          script.onerror = (error) => {
+              console.error('Error loading Botpress Webchat for admin:', error);
+              chatbotContainerAdmin.innerHTML = '<p style="color:red; text-align: center;">Failed to load chatbot.</p>';
+          };
+          document.body.appendChild(script);
+      }
     });
   </script>
 </body>

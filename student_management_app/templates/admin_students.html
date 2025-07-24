@@ -8,11 +8,14 @@
     <link rel="stylesheet" href="/static/css/style4.css">
     <script>
         function confirmDelete(event, deleteUrl) {
+            // Prevent the default link behavior immediately
+            event.preventDefault(); 
+            
             if (confirm("Are you sure you want to delete this student?")) {
+                // If confirmed, then manually navigate
                 window.location.href = deleteUrl;
-            } else {
-                event.preventDefault();
-            }
+            } 
+            // If not confirmed, event.preventDefault() already handled it, so nothing more to do.
         }
     </script>
 </head>
