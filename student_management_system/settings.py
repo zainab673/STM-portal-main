@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+import dj_database_url # <--- Make sure this is imported for database config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,12 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--ot=pcfsva$m9c$+$e0pbv!^f7u85q4k&p8bqj0f=g^5@peqi4'
+SECRET_KEY = os.environ.get('SECRET_KEY', '1v^5(6=ysp3f)vc5aold_(k@r8emmalxxuvjdrj9(3^*lfar_^')
+# Make sure to replace the above with a newly generated key for production, and set it as an env var on Render.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['zanibmalhi.pythonanywhere.com', 'www.zanibmalhi.pythonanywhere.com']
+ALLOWED_HOSTS = ['student_management_system.onrender.com', 'localhost', '127.0.0.1']
+
 
 # Application definition
 
@@ -37,13 +42,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'student_management_app',
 ]
+
 AUTHENTICATION_BACKENDS=[
     'django.contrib.auth.backends.ModelBackend'
 ]
-AUTH_USER_MODEL = 'student_management_app.UserProfile'
+AUTH_USER_MODEL = 'student_management_app.UserProfile' # Assuming this is correct from your app's models.py
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # For serving static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'student_management_system.urls'
 
@@ -65,10 +73,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'student_management_app.context_processors.user_role_processor', # Add this
-
+                'student_management_app.context_processors.user_role_processor', # Add this if it's a custom context processor
             ],
-
         },
     },
 ]
@@ -79,19 +85,11 @@ WSGI_APPLICATION = 'student_management_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-import os
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', 'db4free.net'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')
+    )
 }
-
 
 
 # Password validation
@@ -128,17 +126,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # This will create a 'staticfiles' folder at your project root level
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+# If you have static files in a top-level 'static' folder (not inside an app's 'static' folder)
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-import os
+# Configure WhiteNoise storage for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+# Media files (user-uploaded content)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # This will create a 'staticfiles' folder at your project root level
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
